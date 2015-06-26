@@ -28,7 +28,7 @@ public class LocalStack implements Stack {
 	 */
 	private RandomAccessFile inout;
 	/**
-	 * Permite os 'appends' velozes num arquivo temporario. São 'merge'-ados
+	 * Permite os 'appends' velozes num arquivo temporario. S�o 'merge'-ados
 	 * depois ao arquivo da stack.
 	 */
 	private DataOutputStream out;
@@ -36,24 +36,24 @@ public class LocalStack implements Stack {
 	// Estruturas de Dados do Header da stack: protected para serem visiveis
 	// pelo stackerEntry
 	/**
-	 * Ponteiros com as posições dos arquivos. 1 int para cada arquivo
+	 * Ponteiros com as posicões dos arquivos. 1 int para cada arquivo
 	 */
 	protected int[] offsets = null;
 	/**
-	 * Estado dos arquivos: deletados ou não. 1 bit para cada arquivo (1 int =
+	 * Estado dos arquivos: deletados ou n�o. 1 bit para cada arquivo (1 int =
 	 * 32 arquivos)
 	 */
 	protected int[] statusFiles = null;
 	/**
-	 * Vetorzão com todos os nomes de arquivos hasheados. 16 bytes por arquivo.
+	 * Vetorz�o com todos os nomes de arquivos hasheados. 16 bytes por arquivo.
 	 */
 	protected byte[][] hashedNames = null;
 	/**
-	 * Dados opcionais, escritos no cabeçalho
+	 * Dados opcionais, escritos no cabecalho
 	 */
 	protected int optData;
 	/**
-	 * A próxima posição para append na stack.
+	 * A próxima posic�o para append na stack.
 	 */
 	protected int nextPosition = 0;
 	/**
@@ -151,7 +151,7 @@ public class LocalStack implements Stack {
 			// ### LOAD OFFSETS
 			// O tamanho exato do indice
 			byte[] buffer = new byte[INDEX_SIZE];
-			// Salta para a posição do indice
+			// Salta para a posic�o do indice
 			inout.seek(HEADER_SIZE);
 			// Carrega o indice para um vetor de bytes
 			inout.read(buffer);
@@ -220,7 +220,7 @@ public class LocalStack implements Stack {
 
 	public boolean append(String filename, byte[] filedata) {
 		try {
-			// Carrega estruturas e abre o arquivo de escrita, caso não estejam
+			// Carrega estruturas e abre o arquivo de escrita, caso n�o estejam
 			// abertos
 			if (offsets == null || out == null) {
 				reloadHeader();
@@ -234,7 +234,7 @@ public class LocalStack implements Stack {
 				// Escreve os dados no arquivo
 				out.write(filedata);
 
-				// Armazena a posição final deste arquivo no vetor de ponteiros
+				// Armazena a posic�o final deste arquivo no vetor de ponteiros
 				// Relembrando: offsets.length = stack.MAXFILES+1 e offsets[0]
 				// = DATA_OFFSET
 				offsets[nextPosition + 1] = offsets[nextPosition]
@@ -243,7 +243,7 @@ public class LocalStack implements Stack {
 				// Armazena o nome do arquivo hasheado
 				hashedNames[nextPosition] = StackUtils.strToMD5(filename);
 
-				// Atualiza as variáveis do cabeçalho
+				// Atualiza as variáveis do cabecalho
 				stackLength += filedata.length;
 				nextPosition++;
 				numFiles++;
@@ -267,7 +267,7 @@ public class LocalStack implements Stack {
 			out.close();
 		}
 
-		// o arquivo stack ainda não existe, crie-o do zero da forma mais
+		// o arquivo stack ainda n�o existe, crie-o do zero da forma mais
 		// rapida
 		if (!file.exists()) {
 			out = StackUtils.getDataStream(file, experimentalIO);
@@ -279,11 +279,12 @@ public class LocalStack implements Stack {
 			writeHeaders(inout);
 			close();
 		}
+		
 		// Adiciona a colecao apos o indice no arquivo file
 		StackUtils.mergeFiles(file);
 
 		if (!StackUtils.getTempFile(file).delete()) {
-			logger.warn("Não conseguiu deletar o arquivo " + file);
+			logger.warn("N�o conseguiu deletar o arquivo " + file);
 		}
 		// TODO LastWrite, MD5 e cia
 
@@ -304,15 +305,15 @@ public class LocalStack implements Stack {
 	}
 
 	private void updateHeaderStructs(DataOutput out) throws IOException {
-		// TODO tirar a programação defensiva se ao final da programação,
-		// não houver outra forma de serem criados os vetores exceto com tamanho
+		// TODO tirar a programac�o defensiva se ao final da programac�o,
+		// n�o houver outra forma de serem criados os vetores exceto com tamanho
 		// máximo.
 
 		// Descarregar o vetor dos offsets guardados
 		for (int offset : offsets) {
 			out.writeInt(offset);
 		}
-		// Defensiva: Se por algum motivo não estiver do tamanho certo, compense
+		// Defensiva: Se por algum motivo n�o estiver do tamanho certo, compense
 		for (int i = 0; i < (MAX_FILES + 1) - offsets.length; i++) {
 			out.writeInt(0);
 		}
@@ -321,7 +322,7 @@ public class LocalStack implements Stack {
 		for (int statusFile : statusFiles) {
 			out.writeInt(statusFile);
 		}
-		// Defensiva: Se por algum motivo não estiver do tamanho certo, compense
+		// Defensiva: Se por algum motivo n�o estiver do tamanho certo, compense
 		for (int i = 0; i < STATUS_SIZE / 4 - statusFiles.length; i++) {
 			out.writeInt(0);
 		}
@@ -330,7 +331,7 @@ public class LocalStack implements Stack {
 		for (byte[] hashedName : hashedNames) {
 			out.write(hashedName);
 		}
-		// Defensiva: Se por algum motivo não estiver do tamanho certo, compense
+		// Defensiva: Se por algum motivo n�o estiver do tamanho certo, compense
 		for (int i = 0; i < MAX_FILES - hashedNames.length; i++) {
 			out.write(new byte[HASHEDNAME_SIZE]);
 		}
@@ -383,7 +384,7 @@ public class LocalStack implements Stack {
 			}
 			return true;
 		} catch (IOException e) {
-			logger.error("Erro durante operação stack "+file+" open()", e);
+			logger.error("Erro durante operac�o stack "+file+" open()", e);
 			inout = null;
 			return false;
 		}
@@ -398,7 +399,7 @@ public class LocalStack implements Stack {
 			return true;
 		} catch (IOException e) {
 			inout = null;
-			logger.error("Erro durante operação stack "+file+" close()\n"
+			logger.error("Erro durante operac�o stack "+file+" close()\n"
 					+ e.getMessage());
 			return false;
 		}
@@ -428,12 +429,12 @@ public class LocalStack implements Stack {
 		// Descobre em que bloco (conjunto de Integer.SIZE arquivos) está esse
 		// arquivo
 		int block = position / Integer.SIZE;
-		// Cria uma máscara com bit setado na posição dentro do bloco.
+		// Cria uma máscara com bit setado na posic�o dentro do bloco.
 		// Exemplos: position 0 = ...00001 | position 3 = ...01000 | position 65
 		// = ...00010
 		int bitmask = 1 << (position % Integer.SIZE);
 
-		// Faz AND do bloco com a máscara. Se o resultado for a máscara, então
+		// Faz AND do bloco com a máscara. Se o resultado for a máscara, ent�o
 		// esta deletado.
 		if ((statusFiles[block] & bitmask) == bitmask) {
 			return true;
@@ -449,7 +450,7 @@ public class LocalStack implements Stack {
 		// arquivo
 		int block = position / Integer.SIZE;
 
-		// Cria uma máscara com bit setado na posição dentro do bloco.
+		// Cria uma máscara com bit setado na posic�o dentro do bloco.
 		// Exemplos: position 0 = ...00001 | position 3 = ...01000 | position 65
 		// = ...00010
 		int bitmask = 1 << (position % Integer.SIZE);
@@ -458,18 +459,18 @@ public class LocalStack implements Stack {
 		int backup = statusFiles[block];
 
 		// Faz OR do bloco com a máscara.
-		// Se o bit não estava setado, agora vai estar. Se já estava, nada
+		// Se o bit n�o estava setado, agora vai estar. Se já estava, nada
 		// acontece.
 		statusFiles[block] = statusFiles[block] | bitmask;
 
-		// Se o valor de statusFiles não foi alterado, não escreva nada em
+		// Se o valor de statusFiles n�o foi alterado, n�o escreva nada em
 		// disco, cáspita!
 		if (statusFiles[block] == backup) { return true; }
 
 		// Defensiva FTW
 		open();
 
-		// Vai para a posição e escreve no disco
+		// Vai para a posic�o e escreve no disco
 		inout.seek(STATUS_OFFSET + (Integer.SIZE / 8) * block);
 		inout.writeInt(statusFiles[block]);
 		numFiles--;
@@ -484,7 +485,7 @@ public class LocalStack implements Stack {
 		// arquivo
 		int block = position / Integer.SIZE;
 
-		// Cria uma máscara com bit setado na posição dentro do bloco.
+		// Cria uma máscara com bit setado na posic�o dentro do bloco.
 		// Exemplos: position 0 = ...00001 | position 3 = ...01000 | position 65
 		// = ...00010
 		int bitmask = 1 << (position % Integer.SIZE);
@@ -493,18 +494,18 @@ public class LocalStack implements Stack {
 		int backup = statusFiles[block];
 
 		// Faz AND com complemento da máscara.
-		// Se o bit estava setado, agora não vai estar. Se já não estava, nada
+		// Se o bit estava setado, agora n�o vai estar. Se já n�o estava, nada
 		// acontece.
 		statusFiles[block] = statusFiles[block] & ~bitmask;
 
-		// Se o valor de statusFiles não foi alterado, não escreva nada em
+		// Se o valor de statusFiles n�o foi alterado, n�o escreva nada em
 		// disco, cáspita!
 		if (statusFiles[block] == backup) { return true; }
 
 		// Defensiva FTW
 		open();
 
-		// Vai para a posição e escreve no disco
+		// Vai para a posic�o e escreve no disco
 		inout.seek(STATUS_OFFSET + (Integer.SIZE / 8) * block);
 		inout.writeInt(statusFiles[block]);
 		numFiles++;
@@ -531,7 +532,7 @@ public class LocalStack implements Stack {
 			Arrays.fill(datafilled, filedata.length, slotspace, FILL_CHAR);
 		}
 
-		// Desdeleta a posição
+		// Desdeleta a posic�o
 		undelete(position);
 
 		// Coloca no disco o novo dado

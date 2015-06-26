@@ -24,10 +24,10 @@ import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
 
-/** Diversos m√©todos utilit√°rios de I/O comuns a outras classes das Stacks. */
+/** Diversos mÈtodos utilit·rios de I/O comuns a outras classes das Stacks. */
 
 public final class StackUtils {
-	// N√£o pode ser instanciada.
+	// N„o pode ser instanciada.
 	private StackUtils() {
 	};
 
@@ -36,22 +36,22 @@ public final class StackUtils {
 	/**
 	 * Converte uma String para uma cadeia de bytes UTF-8, de forma otimizada.
 	 * 
-	 * Utilizado antes de m√©todos do tipo 'write' da Stack.
+	 * Utilizado antes de mÈtodos do tipo 'write' da Stack.
 	 * 
-	 * M√©todo original de FastRandomIO e FastOutput, nas tablets 0.x
+	 * MÈtodo original de FastRandomIO e FastOutput, nas stacks 0.x
 	 * 
 	 * @param text
 	 *            A string a ser convertida
 	 * @return Um vetor de bytes representando a String em UTF8
 	 */
-	public static byte[] strToBytes(final String text) {
+	public static byte[] toBytes(final String text) {
 		int strlen = text.length(), utflen = 0;
 		int i = 0, c = 0, count = 0;
 
 		/*
-		 * TODO Talvez d√™ pra melhorar sem varrer a String (e o aparentemente
+		 * TODO Talvez dÍ pra melhorar sem varrer a String (e o aparentemente
 		 * lento String.charAt(i) 2x, fazendo somente uma vez e caso o buffer
-		 * bytearr seja menor que o tamanho da String at√© agora, dobre o tamanho
+		 * bytearr seja menor que o tamanho da String atÈ agora, dobre o tamanho
 		 * dele e jogue o vetor antigo para dentro do novo.
 		 */
 
@@ -97,13 +97,13 @@ public final class StackUtils {
 	/**
 	 * Converte uma cadeia de bytes UTF-8 em uma String, de forma otimizada.
 	 * 
-	 * Utilizado ap√≥s m√©todos do tipo 'read' da Stack.
+	 * Utilizado apÛs mÈtodos do tipo 'read' da Stack.
 	 * 
-	 * Esse m√©todo n√£o foi testado para ler outros tipos de entradas, exceto
-	 * aquelas originadas por strToBytes. Caso contr√°rio, √© poss√≠vel que, em
-	 * alguns casos, este m√©todo falhe.
+	 * Esse mÈtodo n„o foi testado para ler outros tipos de entradas, exceto
+	 * aquelas originadas por strToBytes. Caso contr·rio, È poss√≠vel que, em
+	 * alguns casos, este mÈtodo falhe.
 	 * 
-	 * M√©todo original de FastRandomIO e FastInput, nas tablets 0.x
+	 * MÈtodo original de FastRandomIO e FastInput, nas stacks 0.x
 	 * 
 	 * @param bytearr
 	 *            A cadeia de bytes a ser convertida.
@@ -111,7 +111,7 @@ public final class StackUtils {
 	 * @throws UTFDataFormatException
 	 *             Em caso de uma cadeia de bytes UTF-8 incorreta
 	 */
-	public static String bytesToStr(final byte[] bytearr)
+	public static String toStr(final byte[] bytearr)
 			throws UTFDataFormatException {
 		int c, count = 0;
 		int chararr_count = 0;
@@ -122,8 +122,8 @@ public final class StackUtils {
 		char[] chararr = new char[utflen];
 
 		/*
-		 * Enquanto a m√°scara for de "0xxxxxxx", fique neste caso. A partir do
-		 * ponto em que encontrar outro caso, use o pr√≥ximo bloco para chars de
+		 * Enquanto a m·scara for de "0xxxxxxx", fique neste caso. A partir do
+		 * ponto em que encontrar outro caso, use o prÛximo bloco para chars de
 		 * 1, 2 ou 3 bytes.
 		 */
 		while (count < utflen) {
@@ -135,7 +135,7 @@ public final class StackUtils {
 			chararr[chararr_count++] = (char) c;
 		}
 
-		// Bytes 2 e 3, em caso de caracter UTF n√£o-ASCII
+		// Bytes 2 e 3, em caso de caracter UTF n„o-ASCII
 		int char2, char3;
 
 		while (count < utflen) {
@@ -198,7 +198,7 @@ public final class StackUtils {
 	 * Imprime uma cadeia de bytes como hexadecimal.<br>
 	 * 
 	 * Converte cada byte do array de entrada em dois d√≠gitos hexadecimais.
-	 * Utilidade da cria√ß√£o √© a utiliza√ß√£o para visualizar melhor o MD5. Mas
+	 * Utilidade da criac„o È a utilizac„o para visualizar melhor o MD5. Mas
 	 * talvez possa servir pra outra coisa...
 	 * 
 	 * @param in
@@ -213,13 +213,13 @@ public final class StackUtils {
 	 * Imprime uma cadeia de bytes como hexadecimal.<br>
 	 * 
 	 * Converte cada byte do array de entrada em dois d√≠gitos hexadecimais.
-	 * Utilidade da cria√ß√£o √© a utiliza√ß√£o para visualizar melhor o MD5. Mas
+	 * Utilidade da criac„o È a utilizac„o para visualizar melhor o MD5. Mas
 	 * talvez possa servir pra outra coisa...
 	 * 
 	 * @param in
 	 *            A cadeia de bytes a ser convertida
 	 * @param ini
-	 *            A posi√ß√£o inicial
+	 *            A posic„o inicial
 	 * @param len
 	 *            A quantidade de bytes a ser lida
 	 * @return <code>String</code> Valor em hexadecimal da cadeia de entrada
@@ -257,10 +257,10 @@ public final class StackUtils {
 	 * Calcula o MD5 de um arquivo.<br>
 	 * 
 	 * Calcula o md5sum de um arquivo, geralmente para checar a integridade de
-	 * uma Stack (com o offset de HEADER_SIZE) para que n√£o se carregue uma
+	 * uma Stack (com o offset de HEADER_SIZE) para que n„o se carregue uma
 	 * Stack ruim.<br>
 	 * 
-	 * Um MD5 s√£o valores de 128-bits.
+	 * Um MD5 s„o valores de 128-bits.
 	 * 
 	 * @param file
 	 *            O arquivo onde se quer calcular o MD5
@@ -274,7 +274,7 @@ public final class StackUtils {
 			DataInputStream data = new DataInputStream(
 					new FileInputStream(file));
 			int skiped = data.skipBytes((int) offset);
-			logger.warn("Pulou apenas " + skiped + " bytes, e n√£o " + offset);
+			logger.warn("Pulou apenas " + skiped + " bytes, e n„o " + offset);
 
 			byte[] bufferzao = new byte[(int) (file.length() - offset)];
 			data.readFully(bufferzao);
@@ -295,10 +295,10 @@ public final class StackUtils {
 	 * Calcula o MD5 de um arquivo.<br>
 	 * 
 	 * Calcula o md5sum de um arquivo, geralmente para checar a integridade de
-	 * uma Stack (com o offset de HEADER_SIZE) para que n√£o se carregue uma
+	 * uma Stack (com o offset de HEADER_SIZE) para que n„o se carregue uma
 	 * Stack ruim.<br>
 	 * 
-	 * Um MD5 s√£o valores de 128-bits.
+	 * Um MD5 s„o valores de 128-bits.
 	 * 
 	 * @param file
 	 *            O arquivo onde se quer calcular o MD5
@@ -325,10 +325,10 @@ public final class StackUtils {
 	/**
 	 * Faz o merge dos dados ao arquivo da Stack.
 	 * 
-	 * Id√™ntico a mergeFiles(File, File), exceto que o primeiro arquivo (o de
-	 * origem) √© convencionado em fun√ß√£o do segundo.
+	 * IdÍntico a mergeFiles(File, File), exceto que o primeiro arquivo (o de
+	 * origem) È convencionado em func„o do segundo.
 	 * 
-	 * Conven√ß√£o sobre customiza√ß√£o FTW!!1!
+	 * Convenc„o sobre customizac„o FTW!!1!
 	 * 
 	 * @param file_out
 	 * @throws IOException
@@ -340,14 +340,14 @@ public final class StackUtils {
 	/**
 	 * Converte um array de byte em array de int.<br>
 	 * 
-	 * √â uma fun√ß√£o bem simples, onde a √∫nica peculiaridade √© o par√¢metro
-	 * <code>long</code>, que √© o valor adicionado ao final do array de int
-	 * retornado. √ötil para a convers√£o de dados lidos de um arquivo em √≠ndice
-	 * de uma tablet.
+	 * È uma func„o bem simples, onde a ˙nica peculiaridade È o par√¢metro
+	 * <code>long</code>, que È o valor adicionado ao final do array de int
+	 * retornado. √ötil para a convers„o de dados lidos de um arquivo em √≠ndice
+	 * de uma stack.
 	 * 
 	 * @param bytearr
 	 *            O array a ser convertido
-	 * @return <code>int[]</code> O array j√° convertido
+	 * @return <code>int[]</code> O array j· convertido
 	 */
 	public static int[] byteArrayToIntArray(final byte[] bytearr) {
 		int[] intarr = new int[(bytearr.length / 4)];
@@ -365,20 +365,20 @@ public final class StackUtils {
 	}
 
 	/**
-	 * Gera o arquivo da tablet de forma padronizada.
+	 * Gera o arquivo da stack de forma padronizada.
 	 * 
-	 * Se necess√°rio, cria o path at√© esse arquivo tamb√©m.
+	 * Se necess·rio, cria o path atÈ esse arquivo tambÈm.
 	 * 
 	 * @param first
 	 *            O id do primeiro documento
 	 * @param path
-	 *            O path onde estar√£o as tablets
-	 * @return A referencia para onde ser√° criado o arquivo de tablet.
+	 *            O path onde estar„o as stacks
+	 * @return A referencia para onde ser· criado o arquivo de stack.
 	 */
 	public static File generateStackFile(final int first, final String path) {
 		int len = String.valueOf(first).length();
 
-		String preffix = "tab", suffix = ".tab";
+		String preffix = "stack", suffix = ".stk";
 
 		// Para dezenas de milh√µes de documentos - 10^7
 		for (int i = 0; i < 8 - len; i++) {
@@ -388,8 +388,8 @@ public final class StackUtils {
 		File pathFile = new File(path);
 		if (!pathFile.exists()) {
 			boolean created = pathFile.mkdirs();
-			if (!created) logger
-					.debug("N√£o foi poss√≠vel criar estrutura de diret√≥rios para "
+			if (!created) 
+				logger.debug("N„o foi poss√≠vel criar estrutura de diretÛrios para "
 							+ pathFile.getAbsolutePath());
 		}
 
@@ -398,8 +398,8 @@ public final class StackUtils {
 		return new File(filename);
 	}
 
-	public static File getTempFile(final File tabletFile) {
-		return new File("/tmp/" + tabletFile.getName() + ".tmp");
+	public static File getTempFile(final File stackFile) {
+		return new File("/tmp/" + stackFile.getName() + ".tmp");
 	}
 
 	public static DataOutputStream getDataStream(final File outputfile, final boolean experimental)
@@ -416,10 +416,10 @@ public final class StackUtils {
 	 * Calcula o MD5 de um arquivo.<br>
 	 * 
 	 * Calcula o md5sum de um arquivo, geralmente para checar a integridade de
-	 * uma Tablet (com o offset de HEADER_SIZE) para que n√£o se carregue uma
+	 * uma Tablet (com o offset de HEADER_SIZE) para que n„o se carregue uma
 	 * Tablet ruim.<br>
 	 * 
-	 * Um MD5 s√£o valores de 128-bits.
+	 * Um MD5 s„o valores de 128-bits.
 	 * 
 	 * @param file
 	 *            O arquivo onde se quer calcular o MD5
@@ -440,58 +440,61 @@ public final class StackUtils {
 	 * Adiciona o primeiro arquivo ao final do segundo.<br>
 	 * 
 	 * Faz um merge de alt√≠ssima velocidade dos dois arquivos apontados. O
-	 * segundo arquivo √© aberto em 'modo append' e tem todo o conte√∫do do
+	 * segundo arquivo È aberto em 'modo append' e tem todo o conte˙do do
 	 * primeiro arquivo adicionado.<br>
 	 * 
-	 * A grande velocidade se deve a utiliza√ß√£o dos m√©todos de Java NIO, que
-	 * fazem essa opera√ß√£o em baixo n√≠vel e n√£o bloqueante.<br>
+	 * A grande velocidade se deve a utilizac„o dos mÈtodos de Java NIO, que
+	 * fazem essa operac„o em baixo n√≠vel e n„o bloqueante.<br>
 	 * 
-	 * Por padr√£o, esse m√©todo ser√° utilizado na constru√ß√£o das tablets, onde a
-	 * cole√ß√£o √© escrita num arquivo tempor√°rio que ao final √© 'colado' ao final
-	 * do arquivo da tablet, nos m√©todos populate() e writeTablet().
+	 * Por padr„o, esse mÈtodo ser· utilizado na construc„o das stacks, onde a
+	 * colec„o È escrita num arquivo tempor·rio que ao final È 'colado' ao final
+	 * do arquivo da stack, nos mÈtodos populate() e writeTablet().
 	 * 
 	 * @param file_in
 	 *            O arquivo de onde os dados vem
 	 * @param file_out
-	 *            O arquivo onde os dados estar√£o unidos
+	 *            O arquivo onde os dados estar„o unidos
 	 */
 	public static void mergeFiles(File file_in, File file_out)
 			throws IOException {
 		/*
 		 * Cria a stream para ler o arquivo original Cria a stream para gravar o
-		 * arquivo de c√≥pia Usa as streams para criar os canais correspondentes
-		 * Stream de escrita est√° no modo "append" (true) para n√£o sobreescrever
-		 * o cabe√ßalho e o √≠ndice
+		 * arquivo de cÛpia Usa as streams para criar os canais correspondentes
+		 * Stream de escrita est· no modo "append" (true) para n„o sobreescrever
+		 * o cabecalho e o √≠ndice
 		 */
-		FileChannel r_channel = new FileInputStream(file_in).getChannel();
-		FileChannel w_channel = new FileOutputStream(file_out, true)
-				.getChannel();
+		FileInputStream fis = new FileInputStream(file_in);
+		FileOutputStream fos = new FileOutputStream(file_out, true);
+		FileChannel r_channel = fis.getChannel();
+		FileChannel w_channel = fos.getChannel();
 
-		// Faz a transfer√™ncia
+		// Faz a transferÍncia
 		long lenght = r_channel.size();
 		r_channel.transferTo(0, lenght, w_channel);
 
 		// Fecha os canais
 		w_channel.close();
 		r_channel.close();
+		fis.close();
+		fos.close();
 	}
 
 	/**
 	 * Converte um array de byte em array de int.<br>
 	 * 
-	 * √â uma fun√ß√£o bem simples, onde a √∫nica peculiaridade √© o par√¢metro
-	 * <code>long</code>, que √© o valor adicionado ao final do array de int
-	 * retornado. √ötil para a convers√£o de dados lidos de um arquivo em √≠ndice
-	 * de uma tablet.
+	 * È uma func„o bem simples, onde a ˙nica peculiaridade È o par√¢metro
+	 * <code>long</code>, que È o valor adicionado ao final do array de int
+	 * retornado. √ötil para a convers„o de dados lidos de um arquivo em √≠ndice
+	 * de uma stack.
 	 * 
 	 * @param bytearr
 	 *            O array a ser convertido
 	 * @param size
-	 *            O valor a ser colocado na √∫ltima posi√ß√£o
-	 * @return <code>int[]</code> O array j√° convertido
+	 *            O valor a ser colocado na ˙ltima posic„o
+	 * @return <code>int[]</code> O array j· convertido
 	 */
 	public static int[] byteArrayToIntArray(byte[] bytearr, long size) {
-		// +1 para colocar no final a posi√ß√£o final do arquivo de tablet, √∫til
+		// +1 para colocar no final a posic„o final do arquivo de stack, ˙til
 		// para saber onde termina o ultimo doc
 
 		int[] intarr = new int[(bytearr.length / 4) + 1];
@@ -503,26 +506,26 @@ public final class StackUtils {
 					| (bytearr[(4 * i) + 3] & 0xFF);
 		}
 
-		// Anexa a posi√ß√£o final do documento
+		// Anexa a posic„o final do documento
 		intarr[intarr.length - 1] = (int) size;
 
 		return intarr;
 	}
 	/**
-	 * Move o conte√∫do de uma pasta para outra, sem deletar a pasta de origem
-	 * (mas seu conte√∫do sim)
+	 * Move o conte˙do de uma pasta para outra, sem deletar a pasta de origem
+	 * (mas seu conte˙do sim)
 	 * 
-	 * Se estiverem em diferentes parti√ß√µes, o 'move' falha, e ent√£o se torna um
+	 * Se estiverem em diferentes partic√µes, o 'move' falha, e ent„o se torna um
 	 * copy + delete
 	 * 
-	 * Cuidado ao utilizar esse m√©todo em pastas com MUITOS arquivos
-	 * (dezenas-centenas de milhares), n√£o √© otimizado para esse caso.
+	 * Cuidado ao utilizar esse mÈtodo em pastas com MUITOS arquivos
+	 * (dezenas-centenas de milhares), n„o È otimizado para esse caso.
 	 * 
 	 * @param fromPath
-	 *            Path de onde o conte√∫do ser√° removido
+	 *            Path de onde o conte˙do ser· removido
 	 * @param toPath
-	 *            Path para onde o conte√∫do ser√° movido
-	 * @return o tempo gasto na opera√ß√£o
+	 *            Path para onde o conte˙do ser· movido
+	 * @return o tempo gasto na operac„o
 	 * @throws IOException
 	 */
 	public static long moveDirectoryContents(String fromPath, String toPath)
@@ -531,29 +534,29 @@ public final class StackUtils {
 	}
 
 	/**
-	 * Move o conte√∫do de uma pasta para outra, sem deletar a pasta de origem
-	 * (mas seu conte√∫do sim)
+	 * Move o conte˙do de uma pasta para outra, sem deletar a pasta de origem
+	 * (mas seu conte˙do sim)
 	 * 
-	 * Se estiverem em diferentes parti√ß√µes, o 'move' falha, e ent√£o se torna um
+	 * Se estiverem em diferentes partic√µes, o 'move' falha, e ent„o se torna um
 	 * copy + delete
 	 * 
-	 * Cuidado ao utilizar esse m√©todo em pastas com MUITOS arquivos
-	 * (dezenas-centenas de milhares), n√£o √© otimizado para esse caso.
+	 * Cuidado ao utilizar esse mÈtodo em pastas com MUITOS arquivos
+	 * (dezenas-centenas de milhares), n„o È otimizado para esse caso.
 	 * 
 	 * @param fromPath
-	 *            Path de onde o conte√∫do ser√° removido
+	 *            Path de onde o conte˙do ser· removido
 	 * @param toPath
-	 *            Path para onde o conte√∫do ser√° movido
-	 * @return o tempo gasto na opera√ß√£o
+	 *            Path para onde o conte˙do ser· movido
+	 * @return o tempo gasto na operac„o
 	 * @throws IOException
 	 */
 	public static long moveDirectoryContents(File fromPath, File toPath)
 			throws IOException {
 		/*
-		 * TODO √â poss√≠vel melhorar este m√©todo. Se o File.renameTo √© poss√≠vel,
-		 * ent√£o o ideal √© mover logo os sub-diret√≥rios 'raiz', ao inv√©s de
-		 * realizar m√∫ltiplos mkdirs() + moves individuais. Entretanto essa
-		 * otimiza√ß√£o √© inferior a obtida com este m√©todo atual, ent√£o s√≥
+		 * TODO È poss√≠vel melhorar este mÈtodo. Se o File.renameTo È poss√≠vel,
+		 * ent„o o ideal È mover logo os sub-diretÛrios 'raiz', ao invÈs de
+		 * realizar m˙ltiplos mkdirs() + moves individuais. Entretanto essa
+		 * otimizac„o È inferior a obtida com este mÈtodo atual, ent„o sÛ
 		 * precisa ser feita em caso de extrema necessidade de mais desempenho.
 		 * 
 		 * Foi feito dessa forma pela simplicidade de se utilizar o
@@ -576,7 +579,7 @@ public final class StackUtils {
 
 			final boolean created = newFile.getParentFile().mkdirs();
 			if (!created && logger.isDebugEnabled()) logger
-					.debug("N√£o foi poss√≠vel criar os diret√≥rios para "
+					.debug("N„o foi poss√≠vel criar os diretÛrios para "
 							+ newFile.getParentFile().getAbsolutePath());
 
 			// res vira true se algum rename falhar
@@ -586,7 +589,7 @@ public final class StackUtils {
 		// Se por acaso algum dos renames falhou, copia os arquivos mesmo
 		if (shallTryCopy) FileUtils.copyDirectory(fromPath, toPath);
 
-		// Limpa o diret√≥rio
+		// Limpa o diretÛrio
 		FileUtils.cleanDirectory(fromPath);
 
 		final long end_time = System.currentTimeMillis();
@@ -597,20 +600,20 @@ public final class StackUtils {
 	/**
 	 * Retorna o relativePath de absolutePath a partir de startDir
 	 * 
-	 * M√©todo bob√£o, compara os dois paths passados (tokens s√£o "/") e elimina
-	 * at√© onde forem iguais.
+	 * MÈtodo bob„o, compara os dois paths passados (tokens s„o "/") e elimina
+	 * atÈ onde forem iguais.
 	 * 
 	 * @param absolutePath
 	 *            O arquivo a se obter o relativepath
 	 * @param startDir
-	 *            De onde se quer considerar o come√ßo
+	 *            De onde se quer considerar o comeco
 	 * @return O path relativo
 	 */
 	public static String relativePath(String absolutePath, String startDir) {
 		String[] absolute = absolutePath.split("/");
 		String[] remove = startDir.split("/");
 
-		// Varre os dois vetores at√© o ponto em que diferem
+		// Varre os dois vetores atÈ o ponto em que diferem
 		int start = 0;
 		while (absolute.length > start && remove.length > start
 				&& absolute[start].equals(remove[start])) {
@@ -627,7 +630,7 @@ public final class StackUtils {
 	}
 
 	/**
-	 * Retorna todas as refer√™ncias a arquivos (mas n√£o diret√≥rios) dentro da
+	 * Retorna todas as referÍncias a arquivos (mas n„o diretÛrios) dentro da
 	 * pasta passada
 	 * 
 	 * @param path

@@ -16,16 +16,13 @@ public class LocalStackTest {
 
 	LocalStack stack;
 	final static byte[][] data = {
-			StackUtils.strToBytes("abcde fgh ij klmnop qrst uvwxyz \n"),
-			StackUtils
-					.strToBytes("são paulo corinthians atlético-mg américa-rj \t\n"),
-			StackUtils.strToBytes("pé pá lá já má mé mó ão ãe õe àquele \n"),
-			StackUtils.strToBytes("I can has cheezburger !? omgwtfbbq! \n"),
-			StackUtils.strToBytes("As árveres... somos nozes... \n"),
-			StackUtils
-					.strToBytes("Dolly, Dolly Guaraná Dolly... Dolly Guaraná, sabor diferente \n"),
-			StackUtils
-					.strToBytes("!@#$%*() -={}[]^~; :.,<> |¹²€æß©€ø þjħŋŧ←↓→ \n") };
+			StackUtils.toBytes("abcde fgh ij klmnop qrst uvwxyz \n"),
+			StackUtils.toBytes("s�o paulo corinthians atl�tico-mg am�rica-rj \t\n"),
+			StackUtils.toBytes("p� p� l� j� m� m� m� �o �e \n"),
+			StackUtils.toBytes("I can has cheezburger !? omgwtfbbq! \n"),
+			StackUtils.toBytes("As �rveres... somos nozes... \n"),
+			StackUtils.toBytes("Dolly, Dolly Guaran� Dolly... Dolly Guaran�, sabor diferente \n"),
+			StackUtils.toBytes("!@#$%*() -={}[]^~; :.,<> | \n") };
 	public static final int APPEND_FILES = 100;
 
 	@Before
@@ -38,30 +35,28 @@ public class LocalStackTest {
 
 	}
 
-	// Testa inserção até o limite de arquivos
+	// Testa inserç�o at� o limite de arquivos
 	@Test
 	public void testAppend1() throws IOException {
+		byte[] data = "Dado teste padr�o".getBytes();
 		for (int i = 0; i < Stack.MAX_FILES; i++) {
-			assertTrue(stack
-					.append("file" + i, "Dado teste padrão".getBytes()));
+			assertTrue(stack.append("file" + i, data));
 		}
 		for (int i = 0; i < 10; i++) {
-			assertFalse(stack.append("file" + i, "Dado teste padrão"
-					.getBytes()));
+			assertFalse(stack.append("file" + i, data));
 		}
 		assertEquals(Stack.MAX_FILES, stack.getNumFiles());
 
-		assertEquals(stack.getStackFile().length(),
-				stack.getIndex()[Stack.MAX_FILES]);
+		assertEquals(stack.getStackFile().length(), stack.getIndex()[Stack.MAX_FILES]);
 	}
 
-	// Testa inserção até o limite de tamanho
+	// Testa inserç�o at� o limite de tamanho
 	@Test
 	public void testAppend2() throws IOException {
 		// Define o dado a ser colocado
 		byte[] data = new byte[2 << 19]; // 2 << 19 = 2^20 = 1MB
 
-		// Calcula o numero maximo de arquivos de tamanho data.length que dá pra
+		// Calcula o numero maximo de arquivos de tamanho data.length que d� pra
 		// colocar
 		int max = (Stack.MAX_SIZE - Stack.DATA_OFFSET) / data.length;
 
@@ -129,7 +124,7 @@ public class LocalStackTest {
 		int docs = Stack.MAX_FILES;
 		int first = 14;
 		stack = generateTestStack(first, docs);
-		File tabfile = stack.getStackFile();
+		File stackFile = stack.getStackFile();
 		int[] offsets1 = stack.getIndex();
 
 		for (int i = 0; i < stack.getNumFiles(); i++) {
@@ -147,7 +142,7 @@ public class LocalStackTest {
 		assertEquals(stack.getStackFile().length(), offsets1[docs]);
 
 		stack.close();
-		stack = LocalStack.loadStack(tabfile.getAbsolutePath(), false);
+		stack = LocalStack.loadStack(stackFile.getAbsolutePath(), false);
 
 		// Verifica quantidade de arquivos
 		assertEquals(docs, stack.getNumFiles());
@@ -196,9 +191,9 @@ public class LocalStackTest {
 		assertEquals(stack.getStackFile().length(), stack.getIndex()[docs]);
 		assertTrue(stack.close());
 
-		byte[] doc1 = StackUtils.strToBytes("Yet another text in stacks\n");
+		byte[] doc1 = StackUtils.toBytes("Yet another text in stacks\n");
 		byte[] doc2 = StackUtils
-				.strToBytes("Yet yet yet another byte[] in the stack\n");
+				.toBytes("Yet yet yet another byte[] in the stack\n");
 		stack.append("doc1", doc1);
 		stack.append("doc2", doc2);
 		stack.writeStack();
@@ -208,10 +203,10 @@ public class LocalStackTest {
 		byte[] back1 = stack.get(docs);
 		byte[] back2 = stack.get(docs + 1);
 		for (int i = 0; i < doc1.length || i < back1.length; i++) {
-			assertEquals("Erro na posição " + i, doc1[i], back1[i]);
+			assertEquals("Erro na posiç�o " + i, doc1[i], back1[i]);
 		}
 		for (int i = 0; i < doc2.length || i < back2.length; i++) {
-			assertEquals("Erro na posição " + i, doc2[i], back2[i]);
+			assertEquals("Erro na posiç�o " + i, doc2[i], back2[i]);
 		}
 		stack.close();
 
@@ -227,15 +222,15 @@ public class LocalStackTest {
 		// ### Testar deletados
 		assertEquals(0, stack.getDeleteds().size());
 		assertEquals(ndocs, stack.getNumFiles());
-		// Se o arquivo nao existe na stack... entao não esta deletado! ¬¬
+		// Se o arquivo nao existe na stack... entao n�o esta deletado! ¬¬
 		for (int i = -2; i < Stack.MAX_FILES + 10; i++) {
 			assertFalse(stack.isDeleted(i));
 		}
 
-		// ### Deletar não deletáveis... não pode funcionar!
-		assertFalse(stack.delete(-2)); // Aquém do range
+		// ### Deletar n�o delet�veis... n�o pode funcionar!
+		assertFalse(stack.delete(-2)); // Aqu�m do range
 		assertFalse(stack.delete(ndocs + 1)); // Slot vazio
-		assertFalse(stack.delete(Stack.MAX_FILES + 1)); // Além do range
+		assertFalse(stack.delete(Stack.MAX_FILES + 1)); // Al�m do range
 
 		// ### Deletar e checar quantidades de documentos
 		int[] dfiles = { 0, 1, ndocs / 2, ndocs - 2, ndocs - 1 };
