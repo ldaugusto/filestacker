@@ -9,186 +9,191 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.log4j.BasicConfigurator;
 import org.filestacker.utils.StackUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class StackerTest {
 
-	Stacker tableter;
+	Stacker stacker;
 
 	@Before
 	public void setUp() throws Exception {
+		BasicConfigurator.configure();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		tableter.close();
-		FileUtils.cleanDirectory(new File(tableter.stacksPath));
+		stacker.close();
+		//FileUtils.cleanDirectory(new File(stacker.stacksPath));
 	}
 
 	@Test
 	public void testBasicAddAndSearch() throws IOException {
-		tableter = new Stacker("/tmp/tableter/");
+		stacker = new Stacker("/tmp/stacker/");
 		int ndocs = 50;
 
 		// ##############################
-		// ### Criação e testes básicos de segurança
+		// ### Criacao e testes basicos de seguranca
 		for (int i = 0; i < ndocs; i++) {
-			tableter.addFile("file" + i, LocalStackTest.data[i
+			stacker.addFile("file" + i, LocalStackTest.data[i
 					% LocalStackTest.data.length]);
 		}
-		tableter.optimize();
+		stacker.optimize();
 		for (int i = 0; i < ndocs; i++) {
-			assertArrayEquals(tableter.searchFile(i), LocalStackTest.data[i
+			assertArrayEquals(stacker.searchFile(i), LocalStackTest.data[i
 					% LocalStackTest.data.length]);
 		}
-		assertEquals(ndocs, tableter.totalDocs);
-		assertEquals(ndocs, tableter.nextStackId);
+		assertEquals(ndocs, stacker.totalDocs);
+		assertEquals(ndocs, stacker.nextStackId);
 		// ##############################
 
 		for (int i = ndocs; i < ndocs * 2; i++) {
-			tableter.addFile("file" + i, LocalStackTest.data[i
+			stacker.addFile("file" + i, LocalStackTest.data[i
 					% LocalStackTest.data.length]);
 		}
-		tableter.optimize();
+		stacker.optimize();
 		for (int i = 0; i < ndocs * 2; i++) {
-			assertArrayEquals(tableter.searchFile(i), LocalStackTest.data[i
+			assertArrayEquals(stacker.searchFile(i), LocalStackTest.data[i
 					% LocalStackTest.data.length]);
 		}
-		assertEquals(ndocs * 2, tableter.totalDocs);
-		assertEquals(ndocs * 2, tableter.nextStackId);
+		assertEquals(ndocs * 2, stacker.totalDocs);
+		assertEquals(ndocs * 2, stacker.nextStackId);
 	}
 
 	@Test
 	public void testAddAndSearch() throws IOException {
-		tableter = new Stacker("/tmp/tableter/");
+		stacker = new Stacker("/tmp/stacker/");
 		int ndocs = Stack.MAX_FILES * 7;
 
 		byte[][] data = { { 'A', '\n' }, { 'B', '\n' }, { 'C', '\n' },
 				{ 'D', '\n' }, { 'E', '\n' } };
 
 		for (int i = 0; i < ndocs; i++) {
-			tableter.addFile("file" + i, data[i % data.length]);
+			stacker.addFile("file" + i, data[i % data.length]);
 		}
-		tableter.optimize();
+		stacker.optimize();
 
 		for (int i = 0; i < ndocs; i++) {
-			assertArrayEquals("Erro em " + i, tableter.searchFile(i), data[i
+			assertArrayEquals("Erro em " + i, stacker.searchFile(i), data[i
 					% data.length]);
 		}
-		assertEquals(ndocs, tableter.totalDocs);
-		assertEquals(ndocs, tableter.nextStackId);
+		assertEquals(ndocs, stacker.totalDocs);
+		assertEquals(ndocs, stacker.nextStackId);
 	}
 
 	@Test
 	public void testReload() throws IOException {
-		String path = "/tmp/tableter/";
-		tableter = new Stacker(path);
+		String path = "/tmp/stacker/";
+		stacker = new Stacker(path);
 		int ndocs = 50;
 
 		for (int i = 0; i < ndocs; i++) {
-			tableter.addFile("file" + i, LocalStackTest.data[i
-					% LocalStackTest.data.length]);
+			String file = "file" + i;
+			byte[] data = LocalStackTest.data[i % LocalStackTest.data.length];
+			stacker.addFile(file, data);
 		}
-		tableter.optimize();
-		tableter.close();
+		
+		stacker.optimize();
+		stacker.close();
 
-		tableter = Stacker.loadStacker(path);
+		stacker = Stacker.loadStacker(path);
 		for (int i = 0; i < ndocs; i++) {
-			assertArrayEquals(tableter.searchFile(i), LocalStackTest.data[i
-					% LocalStackTest.data.length]);
+			byte[] data = LocalStackTest.data[i % LocalStackTest.data.length];
+			assertArrayEquals(data, stacker.searchFile(i));
 		}
-		assertEquals(ndocs, tableter.totalDocs);
-		assertEquals(ndocs, tableter.nextStackId);
+		assertEquals(ndocs, stacker.totalDocs);
+		assertEquals(ndocs, stacker.nextStackId);
 	}
 
 	@Test
 	public void testNamespace() throws IOException {
-		tableter = new Stacker("/tmp/tableter/");
+		stacker = new Stacker("/tmp/stacker/");
 		int ndocs = 50;
 
 		// ##############################
-		// ### Criação e testes básicos de segurança
+		// ### Criacao e testes basicos de seguranca
 		for (int i = 0; i < ndocs; i++) {
-			tableter.addFile("file" + i, LocalStackTest.data[i
+			stacker.addFile("file" + i, LocalStackTest.data[i
 					% LocalStackTest.data.length]);
 		}
-		tableter.optimize();
+		stacker.optimize();
 		for (int i = 0; i < ndocs; i++) {
-			assertArrayEquals(tableter.searchFile("file" + i),
+			assertArrayEquals(stacker.searchFile("file" + i),
 					LocalStackTest.data[i % LocalStackTest.data.length]);
 		}
-		assertEquals(ndocs, tableter.totalDocs);
-		assertEquals(ndocs, tableter.nextStackId);
+		assertEquals(ndocs, stacker.totalDocs);
+		assertEquals(ndocs, stacker.nextStackId);
 		// ##############################
 
 		for (int i = ndocs; i < ndocs * 2; i++) {
-			tableter.addFile("file" + i, LocalStackTest.data[i
+			stacker.addFile("file" + i, LocalStackTest.data[i
 					% LocalStackTest.data.length]);
 		}
-		tableter.optimize();
+		stacker.optimize();
 		for (int i = 0; i < ndocs * 2; i++) {
-			assertArrayEquals(tableter.searchFile("file" + i),
+			assertArrayEquals(stacker.searchFile("file" + i),
 					LocalStackTest.data[i % LocalStackTest.data.length]);
 		}
-		assertEquals(ndocs * 2, tableter.totalDocs);
-		assertEquals(ndocs * 2, tableter.nextStackId);
+		assertEquals(ndocs * 2, stacker.totalDocs);
+		assertEquals(ndocs * 2, stacker.nextStackId);
 	}
 
 	@Test
 	public void testDeletes() throws IOException {
-		tableter = new Stacker("/tmp/tableter/");
+		stacker = new Stacker("/tmp/stacker/");
 		int ndocs = 50;
 
 		// ##############################
-		// ### Criação e testes básicos de segurança
+		// ### Criacao e testes basicos de seguranca
 		for (int i = 0; i < ndocs; i++) {
-			tableter.addFile("file" + i, LocalStackTest.data[i
+			stacker.addFile("file" + i, LocalStackTest.data[i
 					% LocalStackTest.data.length]);
 		}
-		tableter.optimize();
+		stacker.optimize();
 		for (int i = 0; i < ndocs; i++) {
-			assertArrayEquals(tableter.searchFile("file" + i),
+			assertArrayEquals(stacker.searchFile("file" + i),
 					LocalStackTest.data[i % LocalStackTest.data.length]);
 		}
-		assertEquals(ndocs, tableter.totalDocs);
-		assertEquals(ndocs, tableter.nextStackId);
+		assertEquals(ndocs, stacker.totalDocs);
+		assertEquals(ndocs, stacker.nextStackId);
 		// ##############################
 
-		int[] dels = { 0, 1, tableter.nextStackId - 2, tableter.nextStackId - 1 };
+		int[] dels = { 0, 1, stacker.nextStackId - 2, stacker.nextStackId - 1 };
 		for (int del : dels) {
-			assertTrue(tableter.deleteFile(del));
-			assertArrayEquals(new byte[0], tableter.searchFile("file" + del));
+			assertTrue(stacker.deleteFile(del));
+			assertArrayEquals(new byte[0], stacker.searchFile("file" + del));
 		}
-		assertEquals(dels.length, tableter.freeSlots.size());
+		assertEquals(dels.length, stacker.freeSlots.size());
 	}
 
-	// ESSE TESTE SO É VALIDO ENQUANTO NAO TIVER GC
+	// ESSE TESTE SO � VALIDO ENQUANTO NAO TIVER GC
 	@Test
 	public void testUpdates() throws IOException {
-		tableter = new Stacker("/tmp/tableter/");
+		stacker = new Stacker("/tmp/stacker/");
 		int ndocs = 50;
 
 		// ##############################
-		// ### Criação e testes básicos de segurança
+		// ### Criacao e testes basicos de seguranca
 		for (int i = 0; i < ndocs; i++) {
-			tableter.addFile("file" + i, LocalStackTest.data[i
+			stacker.addFile("file" + i, LocalStackTest.data[i
 					% LocalStackTest.data.length]);
 		}
-		tableter.optimize();
+		stacker.optimize();
 		for (int i = 0; i < ndocs; i++) {
-			assertArrayEquals(tableter.searchFile("file" + i),
+			assertArrayEquals(stacker.searchFile("file" + i),
 					LocalStackTest.data[i % LocalStackTest.data.length]);
 		}
-		assertEquals(ndocs, tableter.totalDocs);
-		assertEquals(ndocs, tableter.nextStackId);
+		assertEquals(ndocs, stacker.totalDocs);
+		assertEquals(ndocs, stacker.nextStackId);
 		// ##############################
 
 		// Define o maior e o menor tamanho dos dados de teste
 		// Maior+1: Util para garantir que haja apenas um update, sem replace
-		// Menor : Util para garantir que haja um replace em qualquer posição
+		// Menor : Util para garantir que haja um replace em qualquer posicao
 		int greater_len = 0;
 		for (byte[] b : LocalStackTest.data) {
 			if (b.length > greater_len) {
@@ -196,56 +201,62 @@ public class StackerTest {
 			}
 		}
 
-		// Garante que aconteça update+append
-		byte[] bizarra = StackUtils.strToBytes(RandomStringUtils
+		// Garante que aconteca update+append
+		byte[] bizarra = StackUtils.toBytes(RandomStringUtils
 				.randomAscii(greater_len + 1));
 		int[] dels = { 0, 10, 20, 30, 40 };
 
 		for (int del : dels) {
-			tableter.addFile("file" + del, bizarra);
+			stacker.addFile("file" + del, bizarra);
 		}
-		tableter.optimize();
+		stacker.optimize();
 
 		// A cadeia deve ser encontrada corretamente tanto pelo nome...
 		for (int del : dels) {
-			assertArrayEquals(bizarra, tableter.searchFile("file" + del));
+			assertArrayEquals(bizarra, stacker.searchFile("file" + del));
 		}
 
 		// ...mas a busca por IDs deve continuar igual a como era antes...
 		for (int i = 0; i < ndocs; i++) {
 			assertArrayEquals(LocalStackTest.data[i
-					% LocalStackTest.data.length], tableter.searchFile(i));
+					% LocalStackTest.data.length], stacker.searchFile(i));
 		}
 
 		// ...e com as posicoes novas sendo os adicionados...
 		for (int i = ndocs; i < ndocs + dels.length; i++) {
-			assertArrayEquals(bizarra, tableter.searchFile(i));
+			assertArrayEquals(bizarra, stacker.searchFile(i));
 		}
 	}
 
 	@Test
 	public void testReplacesAndUpdates() throws IOException {
-		tableter = new Stacker("/tmp/tableter/");
+		stacker = new Stacker("/tmp/stacker/");
 		int ndocs = 50;
 
 		// ##############################
-		// ### Criação e testes básicos de segurança
+		// ### Criacao e testes basicos de seguranca
 		for (int i = 0; i < ndocs; i++) {
-			tableter.addFile("file" + i, LocalStackTest.data[i
-					% LocalStackTest.data.length]);
+			int pos = i % LocalStackTest.data.length;
+			byte[] data = LocalStackTest.data[pos];
+			String file = "file" + i;
+			stacker.addFile(file, data);
 		}
-		tableter.optimize();
+		stacker.optimize();
 		for (int i = 0; i < ndocs; i++) {
-			assertArrayEquals(tableter.searchFile("file" + i),
-					LocalStackTest.data[i % LocalStackTest.data.length]);
+			int pos = i % LocalStackTest.data.length;
+			byte[] data = LocalStackTest.data[pos];
+			String file = "file" + i;
+			assertArrayEquals(data, stacker.searchFile(file));
 		}
-		assertEquals(ndocs, tableter.totalDocs);
-		assertEquals(ndocs, tableter.nextStackId);
+		
+		assertEquals(ndocs, stacker.totalDocs);
+		assertEquals(ndocs, stacker.nextStackId);
+		
 		// ##############################
 
 		// Define o maior e o menor tamanho dos dados de teste
 		// Maior+1: Util para garantir que haja apenas um update, sem replace
-		// Menor : Util para garantir que haja um replace em qualquer posição
+		// Menor : Util para garantir que haja um replace em qualquer posicao
 		int lesser_len = Integer.MAX_VALUE;
 		for (byte[] b : LocalStackTest.data) {
 			if (b.length < lesser_len) {
@@ -253,9 +264,8 @@ public class StackerTest {
 			}
 		}
 
-		// Garante que str nova caiba em qualquer posição para o replace
-		byte[] bizarra = StackUtils.strToBytes(RandomStringUtils
-				.randomAscii(lesser_len));
+		// Garante que str nova caiba em qualquer posicao para o replace
+		byte[] bizarra = StackUtils.toBytes(RandomStringUtils.randomAscii(lesser_len));
 
 		// Garante que vai tentar replace em 1 ocorrencia de cada strings e com
 		// um offset:
@@ -267,16 +277,16 @@ public class StackerTest {
 		}
 
 		for (int del : dels) {
-			tableter.addFile("file" + del, bizarra);
+			stacker.addFile("file" + del, bizarra);
 		}
-		tableter.optimize();
+		stacker.optimize();
 
 		// A cadeia deve ser encontrada corretamente tanto pelo nome...
 		for (int del : dels) {
-			// É necessário o String.trim() para ficar como esperado... então
+			// � necessario o String.trim() para ficar como esperado... ent�o
 			// byte[] -> String -> byte[]
-			byte[] actual = StackUtils.strToBytes(StackUtils.bytesToStr(
-					tableter.searchFile("file" + del)).trim());
+			byte[] actual = StackUtils.toBytes(StackUtils.toStr(
+					stacker.searchFile("file" + del)).trim());
 			assertArrayEquals(bizarra, actual);
 		}
 
@@ -285,17 +295,17 @@ public class StackerTest {
 			// se o ID for um dos trocados, espera-se a string bizarra
 			for (int del : dels) {
 				if (i == del) {
-					// É necessário o String.trim() para ficar como esperado...
-					// então byte[] -> String -> byte[]
-					byte[] actual = StackUtils.strToBytes(StackUtils
-							.bytesToStr(tableter.searchFile(del)).trim());
+					// � necessario o String.trim() para ficar como esperado...
+					// ent�o byte[] -> String -> byte[]
+					byte[] actual = StackUtils.toBytes(StackUtils
+							.toStr(stacker.searchFile(del)).trim());
 					assertArrayEquals("Erro para id " + del, bizarra, actual);
 					continue EXTERNAL;
 				}
 			}
-			// senão, segue o mesmo teste de antes
+			// sen�o, segue o mesmo teste de antes
 			assertArrayEquals(LocalStackTest.data[i
-					% LocalStackTest.data.length], tableter.searchFile(i));
+					% LocalStackTest.data.length], stacker.searchFile(i));
 		}
 	}
 }

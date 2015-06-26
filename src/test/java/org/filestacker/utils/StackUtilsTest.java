@@ -37,7 +37,7 @@ public class StackUtilsTest {
 	@Test
 	public final void testMergeFiles() throws IOException {
 		BufferedWriter writer;
-		String msg1 = "Java - TabletUtilsTest.java - EclipseSDK";
+		String msg1 = "Java - StackUtilsTest.java - EclipseSDK";
 		String msg2 = "Problems | Javadoc | Declaration | Console";
 
 		File tmp1 = new File("/tmp/write.1"), tmp2 = StackUtils
@@ -82,8 +82,8 @@ public class StackUtilsTest {
 				"ดตญทธยษส", "ヅテガシジツミポブ", "สçヅยãテОガ;ธ§Д" };
 
 		for (String str : data) {
-			assertEquals(str, StackUtils.bytesToStr(StackUtils
-					.strToBytes(str)));
+			assertEquals(str, StackUtils.toStr(StackUtils
+					.toBytes(str)));
 		}
 	}
 
@@ -120,7 +120,7 @@ public class StackUtilsTest {
 		};
 		for (byte[] data : b) {
 			try {
-				StackUtils.bytesToStr(data);
+				StackUtils.toStr(data);
 				fail("Sequencia deveria disparar uma UTFDataFormatException...");
 			} catch (UTFDataFormatException e) {
 				continue;
@@ -129,9 +129,9 @@ public class StackUtilsTest {
 	}
 
 	@Test
-	public void testGenerateTabletFile() {
-		assertEquals("/tmp/tab00000000.tab", StackUtils.generateStackFile(0, "/tmp").getAbsolutePath());
-		assertEquals("/tmp/hoho/tab00001000.tab", StackUtils.generateStackFile(1000, "/tmp/hoho").getAbsolutePath());
+	public void testGenerateStackFile() {
+		assertEquals("/tmp/stack00000000.stk", StackUtils.generateStackFile(0, "/tmp").getAbsolutePath());
+		assertEquals("/tmp/hoho/stack00001000.stk", StackUtils.generateStackFile(1000, "/tmp/hoho").getAbsolutePath());
 	}
 
 	@Test

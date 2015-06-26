@@ -47,7 +47,7 @@ public class Stacker {
 		
 		boolean created = new File(stacksPath).mkdirs();
 		if (!created && logger.isDebugEnabled()) 
-			logger.debug("NÔøΩo foi possivel criar o diretorio " + path + " para as stacks");
+			logger.debug("N„o foi possivel criar o diretorio " + path + " para as stacks");
 	}
 
 	private Stacker(final String path, final LocalStack[] stacks, boolean threadSafe, boolean experimentalIO, boolean useGzip) throws IOException {
@@ -61,7 +61,7 @@ public class Stacker {
 
 			// Carregue o local namespace de cada stack juntando no stacker
 			byte[][] localspace = entries[i].getNamespace();
-			// Carregue os nomes dos arquivos n√£o deletados
+			// Carregue os nomes dos arquivos n„o deletados
 			for (int k = 0; k < localspace.length
 					&& k < entries[i].getNumFiles(); k++) {
 				if (!entries[i].isDeleted(entries[i].firstId + k)) {
@@ -89,14 +89,14 @@ public class Stacker {
 	}
 	
 	public static Stacker loadStacker(final String path, boolean threadSafe, boolean experimentalIO, boolean useGzip)  throws IOException {
-		String[] extensions = { "tab" };
+		String[] extensions = { "stk" };
 		Collection<File> files = FileUtils.listFiles(new File(path), extensions, true);
 		Collections.sort((List<File>) files);
 		LocalStack[] stacks = new LocalStack[files.size()];
 
 		int count = 0;
-		for (File tabfile : files) {
-			stacks[count++] = LocalStack.loadStack(tabfile, experimentalIO);
+		for (File stackFile : files) {
+			stacks[count++] = LocalStack.loadStack(stackFile, experimentalIO);
 		}
 
 		return new Stacker(path, stacks, threadSafe, experimentalIO, useGzip);
@@ -104,7 +104,7 @@ public class Stacker {
 
 	public int addFile(final String filename, final byte[] filedata) {
 		/*
-		 * se current √© nulo crie nova stack se o nome ja existe, delete o
+		 * se current È nulo crie nova stack se o nome ja existe, delete o
 		 * arquivo current.append se append retorna false, current = null
 		 * recursivo se foi ok atualiza namespace
 		 */
@@ -123,11 +123,6 @@ public class Stacker {
 			}
 
 			if (lastEntry.append(filename, filedata)) {
-				if (nextStackId > 4093000) {
-					logger.debug("[Attention] stackid: " + nextStackId + " / "
-							+ filename + " / current stack docs: "
-							+ (lastEntry.getLastId() - lastEntry.firstId));
-				}
 				namespace.put(StackUtils.strToHexaMD5(filename), nextStackId);
 				int return_stackid = nextStackId;
 				totalDocs++;
@@ -138,7 +133,7 @@ public class Stacker {
 				return addFile(filename, filedata);
 			}
 		} catch (IOException ioe) {
-			logger.warn("NÔøΩo foi possÔøΩvel adicionar o doc " + filename + " na stack", ioe);
+			logger.warn("N„o foi possÌvel adicionar o doc " + filename + " na stack", ioe);
 			return -1;
 		}
 	}
@@ -150,7 +145,7 @@ public class Stacker {
 		if (freeSlots.size() == 0) { return -1; }
 
 		if (datasize > freeSlots.get(freeSlots.size() - 1).size) {
-			// System.err.println("√â, "+datasize+" n√£o cabe em nenhum slot! Maior slot: "+freeSlots.get(freeSlots.size()-1).size);
+			// System.err.println("…, "+datasize+" n„o cabe em nenhum slot! Maior slot: "+freeSlots.get(freeSlots.size()-1).size);
 			return -2;
 		}
 
@@ -252,22 +247,18 @@ public class Stacker {
 		return searchEntry(0, entries.length, stackid);
 	}
 
-	public StackerEntry searchEntry(final int first, final int last,
-			final int stackid) {
-//		logger.debug("searchEntry(first "+first+", last "+last+", stackid "+stackid+")");
-//		for(int i = first; i < last; i++) {
-//			logger.debug("entry["+i+"] = ("+entries[i].firstId+" ... "+entries[i].getLastId()+")");
-//		}
-		// int pivot = (first + last)/2;
+	public StackerEntry searchEntry(int first, int last, int stackid) {
 		// Defensiva: evita overflow
 		int pivot = first / 2 + last / 2;
 
-		if (stackid < entries[pivot].firstId) { return searchEntry(first, pivot,
-				stackid); }
-		if (stackid > entries[pivot].getLastId()) { return searchEntry(pivot + 1,
-				last, stackid); }
+		if (stackid < entries[pivot].firstId) { 
+			return searchEntry(first, pivot, stackid); 
+		}
+		
+		if (stackid > entries[pivot].getLastId()) { 
+			return searchEntry(pivot + 1, last, stackid); 
+		}
 
-		// System.err.println("return entries["+pivot+"]");
 		return entries[pivot];
 	}
 
@@ -294,11 +285,6 @@ public class Stacker {
 	}
 
 	public void printSlotList() {
-		// String str = "";
-		// for (StackFreeSlot slot : freeSlots) {
-		// str += slot.size+" / ";
-		// }
-		// System.err.println(str);
 		for (StackFreeSlot slot : freeSlots) {
 			System.err.println(slot);
 		}
@@ -317,7 +303,9 @@ public class Stacker {
 	}
 
 	public int getLastId() {
-		if (entries.length == 0) { return -1; }
+		if (entries.length == 0) { 
+			return -1; 
+		}
 
 		return entries[entries.length - 1].getLastId();
 	}
