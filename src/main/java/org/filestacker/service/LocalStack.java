@@ -299,7 +299,7 @@ public class LocalStack implements Stack {
 		out.writeLong(System.currentTimeMillis()); // UPDATE TIME
 
 		// MD5 será adicionado depois
-		out.write(new byte[16]); // MD5
+		out.write(new byte[Stack.HASHEDNAME_SIZE]); // MD5
 
 		updateHeaderStructs(out);
 	}
@@ -355,7 +355,8 @@ public class LocalStack implements Stack {
 
 	public byte[] get(String filename) throws IOException {
 		byte[] queryname = StackUtils.strToMD5(filename);
-		MAIN: for (int i = 0; i < hashedNames.length; i++) {
+		MAIN: 
+		for (int i = 0; i < hashedNames.length; i++) {
 			for (int k = 0; k < hashedNames[i].length; k++) {
 				if (hashedNames[i][k] != queryname[k]) {
 					continue MAIN;

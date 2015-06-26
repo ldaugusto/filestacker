@@ -15,7 +15,15 @@ Then recently I stepped in another project with millions of (usually) even small
 
 I done just a bit more than found the old code, extract from the larger Master's project (except for the distributed module), updated the dependencies to newer versions, ran the tests and... it worked like a spell. 
 
-Then, I integrated FileStacker in my current project and it now runs almost twice faster, so I decided to released it here. 
+Then, I integrated FileStacker in my current project and now it runs almost twice faster, so I decided to released it here. 
+
+Retrieving from the filesystem: 180.29 files/s
+Retrieving from FileStacker: 426.29 files/s
+
+Diskspace on the filesystem: 4150M
+Diskspace with FileStacker*: 1480M
+
+(using the same files, no compression, only internal fragmentation gains)
 
 ## Example
 

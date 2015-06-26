@@ -457,6 +457,12 @@ public final class StackUtils {
 	 */
 	public static void mergeFiles(File file_in, File file_out)
 			throws IOException {
+		if (!file_in.exists()) {
+			logger.warn("Arquivo de leitura "+ file_in.getAbsolutePath() + " não existe."
+							+ "Merge não realizado (normal caso tenha sido apenas reaproveitado espaco)");
+			return;
+		}
+		
 		/*
 		 * Cria a stream para ler o arquivo original Cria a stream para gravar o
 		 * arquivo de cópia Usa as streams para criar os canais correspondentes
