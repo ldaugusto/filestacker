@@ -2,7 +2,6 @@ package org.filestacker.utils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,9 +10,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.UTFDataFormatException;
-
-import junit.framework.JUnit4TestAdapter;
 
 import org.junit.Test;
 
@@ -40,8 +36,8 @@ public class StackUtilsTest {
 		String msg1 = "Java - StackUtilsTest.java - EclipseSDK";
 		String msg2 = "Problems | Javadoc | Declaration | Console";
 
-		File tmp1 = new File("/tmp/write.1"), tmp2 = StackUtils
-				.getTempFile(tmp1);
+		File tmp1 = new File("/tmp/write.1"); 
+		File tmp2 = StackUtils.getTempFile(tmp1);
 		tmp1.deleteOnExit();
 		tmp2.deleteOnExit();
 
@@ -73,61 +69,6 @@ public class StackUtilsTest {
 		}
 	}
 
-	/**
-	 * Testa diversos casos de strings utf-8: com caracteres de 1, 2 e 3 bytes
-	 */
-	@Test
-	public final void testStrBytesConversions() throws UTFDataFormatException {
-		String[] data = { "pàpêpípõpü", "\t \n \r", "", " ", "ЊДОШПЦФ",
-				"ดตญทธยษส", "ヅテガシジツミポブ", "สçヅยãテОガ;ธ§Д" };
-
-		for (String str : data) {
-			assertEquals(str, StackUtils.toStr(StackUtils
-					.toBytes(str)));
-		}
-	}
-
-	/**
-	 * Testa em lote os casos que deveriam disparar UTFDataFormatException
-	 * 
-	 * O mais correto seria fazer um teste pra cada, mas dá muito trabalho e
-	 * ficaria pouco organizado
-	 */
-	@Test
-	public void testStrBytesConversionsException() {
-		/*
-		 * ### TABELA DE UTF-8 A) Char de 1 byte: 0xxx xxxx B) Char impossivel:
-		 * 10xx xxxx (somente para continuidade) C) Char de 2 bytes: 110x xxxx
-		 * 10xx xxxx D) Char de 3 bytes: 1110 xxxx 10xx xxxx 10xx xxxx E) Char
-		 * impossivel: 1111 xxxx
-		 * 
-		 * Erros possíveis: 1) 1o byte do caracter ser da categoria B 2) 1o byte
-		 * do caracter ser da categoria E 3) 2o byte da categoria C não ser 10xx
-		 * xxxx 4) 2o byte da categoria D não ser 10xx xxxx 5) 3o byte da
-		 * categoria D não ser 10xx xxxx 6) Sequencia de bytes acabar após o 1o
-		 * byte do caso C 7) Sequencia de bytes acabar após o 2o byte do caso D
-		 * 8) Sequencia de bytes acabar após o 2o byte do caso D
-		 */
-
-		byte[][] b = { { 65, 66, -128, 67, 68 }, // Erro 1: A, B, bizarro, C, E
-				{ 65, 66, -16, 67, 68 }, // Erro 2: A, B, bizarro, C, E
-				{ 65, 66, -64, 127, 68 }, // Erro 3: A, B, ok1, ERRO!, E
-				{ 65, 66, -32, 127, 68 }, // Erro 4: A, B, ok1, ERRO!, E
-				{ 65, 66, -32, -128, 127 },// Erro 5: A, B, ok1, ok2, ERRO!
-				{ 65, 66, 67, 68, -64 }, // Erro 6: A, B, C, D, ok1
-				{ 65, 66, 67, 68, -32 }, // Erro 7: A, B, C, D, ok1
-				{ 65, 66, 67, -32, -128 }, // Erro 8: A, B, C, ok1, ok2
-		};
-		for (byte[] data : b) {
-			try {
-				StackUtils.toStr(data);
-				fail("Sequencia deveria disparar uma UTFDataFormatException...");
-			} catch (UTFDataFormatException e) {
-				continue;
-			}
-		}
-	}
-
 	@Test
 	public void testGenerateStackFile() {
 		assertEquals("/tmp/stack00000000.stk", StackUtils.generateStackFile(0, "/tmp").getAbsolutePath());
@@ -143,14 +84,9 @@ public class StackUtilsTest {
 		File file = new File("/tmp/hahaha");
 		RandomAccessFile rand = new RandomAccessFile(file, "rw");
 		rand.close();
-		assertEquals(md5, StackUtils.toHexadecimal(StackUtils
-				.calcMD5(file, 0)));
+		assertEquals(md5, StackUtils.toHexadecimal(StackUtils.calcMD5(file, 0)));
 		if (!file.delete()) {
 			System.err.println("Não conseguiu deletar o arquivo " + file);
 		}
-	}
-	
-	public static junit.framework.Test suite() {
-		return new JUnit4TestAdapter(StackUtilsTest.class);
 	}
 }

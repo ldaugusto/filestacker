@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.filestacker.utils.FastRandomAccessFile;
 import org.filestacker.utils.StackUtils;
 
 public class LocalStack implements Stack {
@@ -73,16 +72,13 @@ public class LocalStack implements Stack {
 
 	public final static byte FILL_CHAR = (byte) 32;
 	
-	protected final boolean experimentalIO; 
-
 	/**
 	 * Construtor utilizado para construir uma nova stack.
 	 * 
 	 * @param firstStackId
 	 */
-	public LocalStack(int firstId, String path, boolean useExperimentalIO) {
+	public LocalStack(int firstId, String path) {
 		this.firstStackId = firstId;
-		this.experimentalIO = useExperimentalIO;
 
 		// Gera o objeto que referencia o arquivo da stack
 		file = StackUtils.generateStackFile(firstStackId, path);
@@ -100,11 +96,11 @@ public class LocalStack implements Stack {
 		}
 	}
 
-	public static LocalStack loadStack(String path, boolean experimentalIO) throws IOException {
-		return loadStack(new File(path), experimentalIO);
+	public static LocalStack loadStack(String path) throws IOException {
+		return loadStack(new File(path));
 	}
 
-	public static LocalStack loadStack(File file, boolean experimentalIO) throws IOException {
+	public static LocalStack loadStack(File file) throws IOException {
 		if (!file.exists()) { 
 			throw new FileNotFoundException("stack file not found"); 
 		}
@@ -113,7 +109,7 @@ public class LocalStack implements Stack {
 			throw new IOException("stack file should have read and write permissions"); 
 		}
 
-		return new LocalStack(file, experimentalIO);
+		return new LocalStack(file);
 	}
 
 	/**
@@ -121,8 +117,7 @@ public class LocalStack implements Stack {
 	 * 
 	 * @param file
 	 */
-	private LocalStack(File file, boolean experimentalIO) {
-		this.experimentalIO = experimentalIO;
+	private LocalStack(File file) {
 		// Aponta o objeto que referencia o arquivo da stack
 		this.file = file;
 		loadStack();
@@ -224,7 +219,7 @@ public class LocalStack implements Stack {
 			// abertos
 			if (offsets == null || out == null) {
 				reloadHeader();
-				out = StackUtils.getDataStream(StackUtils.getTempFile(file), experimentalIO);
+				out = StackUtils.getDataStream(StackUtils.getTempFile(file));
 			}
 
 			// Se for poss√≠vel adicionar outro arquivo e com este dado
@@ -235,10 +230,10 @@ public class LocalStack implements Stack {
 				out.write(filedata);
 
 				// Armazena a posic„o final deste arquivo no vetor de ponteiros
-				// Relembrando: offsets.length = stack.MAXFILES+1 e offsets[0]
-				// = DATA_OFFSET
-				offsets[nextPosition + 1] = offsets[nextPosition]
-						+ filedata.length;
+				// Relembrando: 
+				// offsets.length = stack.MAXFILES+1 and 
+				// offsets[0] = DATA_OFFSET
+				offsets[nextPosition + 1] = offsets[nextPosition] + filedata.length;
 
 				// Armazena o nome do arquivo hasheado
 				hashedNames[nextPosition] = StackUtils.strToMD5(filename);
@@ -270,7 +265,7 @@ public class LocalStack implements Stack {
 		// o arquivo stack ainda n„o existe, crie-o do zero da forma mais
 		// rapida
 		if (!file.exists()) {
-			out = StackUtils.getDataStream(file, experimentalIO);
+			out = StackUtils.getDataStream(file);
 			writeHeaders(out);
 			out.close();
 		} else {
@@ -378,10 +373,7 @@ public class LocalStack implements Stack {
 	public boolean open() {
 		try {
 			if (inout == null) {
-				if (experimentalIO)
-					inout = new FastRandomAccessFile(file, "rw");
-				else
-					inout = new RandomAccessFile(file, "rw");
+				inout = new RandomAccessFile(file, "rw");
 			}
 			return true;
 		} catch (IOException e) {

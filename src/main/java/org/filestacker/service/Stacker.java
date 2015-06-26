@@ -28,30 +28,27 @@ public class Stacker {
 	
 	protected final String stacksPath;
 	protected final boolean singleMode;
-	protected final boolean useExperimentalIO;
 	protected final boolean useCompression;
 
 	private static final boolean DEFAULT_SINGLEMODE = true;
-	private static final boolean DEFAULT_EXPERIMENTALIO = false;
 	private static final boolean DEFAULT_COMPRESSION = false;
 	
 	public Stacker(final String path) {
-		this(path, DEFAULT_SINGLEMODE, DEFAULT_EXPERIMENTALIO, DEFAULT_COMPRESSION);
+		this(path, DEFAULT_SINGLEMODE, DEFAULT_COMPRESSION);
 	}
 	
-	public Stacker(final String path, boolean threadSafe, boolean experimentalIO, boolean useGzip) {
+	public Stacker(final String path, boolean threadSafe, boolean compression) {
 		stacksPath = path;
 		singleMode = threadSafe;
-		useExperimentalIO = experimentalIO;
-		useCompression = useGzip;
+		useCompression = compression;
 		
 		boolean created = new File(stacksPath).mkdirs();
 		if (!created && logger.isDebugEnabled()) 
 			logger.debug("Não foi possivel criar o diretorio " + path + " para as stacks");
 	}
 
-	private Stacker(final String path, final LocalStack[] stacks, boolean threadSafe, boolean experimentalIO, boolean useGzip) throws IOException {
-		this(path, threadSafe, experimentalIO, useGzip);
+	protected Stacker(final String path, final LocalStack[] stacks, boolean threadSafe, boolean compression) throws IOException {
+		this(path, threadSafe, compression);
 		
 		entries = new StackerEntry[stacks.length];
 		
@@ -85,10 +82,10 @@ public class Stacker {
 	}
 
 	public static Stacker loadStacker(final String path) throws IOException {
-		return loadStacker(path, DEFAULT_SINGLEMODE, DEFAULT_EXPERIMENTALIO, DEFAULT_COMPRESSION);
+		return loadStacker(path, DEFAULT_SINGLEMODE, DEFAULT_COMPRESSION);
 	}
 	
-	public static Stacker loadStacker(final String path, boolean threadSafe, boolean experimentalIO, boolean useGzip)  throws IOException {
+	protected static LocalStack[] stacks(String path) throws IOException {
 		String[] extensions = { "stk" };
 		Collection<File> files = FileUtils.listFiles(new File(path), extensions, true);
 		Collections.sort((List<File>) files);
@@ -96,10 +93,15 @@ public class Stacker {
 
 		int count = 0;
 		for (File stackFile : files) {
-			stacks[count++] = LocalStack.loadStack(stackFile, experimentalIO);
+			stacks[count++] = LocalStack.loadStack(stackFile);
 		}
-
-		return new Stacker(path, stacks, threadSafe, experimentalIO, useGzip);
+		
+		return stacks;
+	}
+	
+	public static Stacker loadStacker(final String path, boolean threadSafe, boolean compression)  throws IOException {
+		LocalStack[] stacks = stacks(path);
+		return new Stacker(path, stacks, threadSafe, compression);
 	}
 
 	public int addFile(final String filename, final byte[] filedata) {
@@ -213,7 +215,7 @@ public class Stacker {
 	 * 
 	 */
 	private final void createNewStack() {
-		lastEntry = new StackerEntry(new LocalStack(nextStackId, stacksPath, useExperimentalIO), singleMode);
+		lastEntry = new StackerEntry(new LocalStack(nextStackId, stacksPath), singleMode);
 
 		StackerEntry[] backup = entries;
 		entries = new StackerEntry[backup.length + 1];

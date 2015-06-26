@@ -16,18 +16,18 @@ public class LocalStackTest {
 
 	LocalStack stack;
 	final static byte[][] data = {
-			StackUtils.toBytes("abcde fgh ij klmnop qrst uvwxyz \n"),
-			StackUtils.toBytes("são paulo corinthians atlético-mg américa-rj \t\n"),
-			StackUtils.toBytes("pé pá lá já má mé mó ão ãe \n"),
-			StackUtils.toBytes("I can has cheezburger !? omgwtfbbq! \n"),
-			StackUtils.toBytes("As árveres... somos nozes... \n"),
-			StackUtils.toBytes("Dolly, Dolly Guaraná Dolly... Dolly Guaraná, sabor diferente \n"),
-			StackUtils.toBytes("!@#$%*() -={}[]^~; :.,<> | \n") };
+		TextStacker.toBytes("abcde fgh ij klmnop qrst uvwxyz \n"),
+		TextStacker.toBytes("são paulo corinthians atlético-mg américa-rj \t\n"),
+		TextStacker.toBytes("pé pá lá já má mé mó ão ãe \n"),
+		TextStacker.toBytes("I can has cheezburger !? omgwtfbbq! \n"),
+		TextStacker.toBytes("As árveres... somos nozes... \n"),
+		TextStacker.toBytes("Dolly, Dolly Guaraná Dolly... Dolly Guaraná, sabor diferente \n"),
+		TextStacker.toBytes("!@#$%*() -={}[]^~; :.,<> | \n") };
 	public static final int APPEND_FILES = 100;
 
 	@Before
 	public void setUp() throws Exception {
-		stack = new LocalStack(0, "/tmp", false);
+		stack = new LocalStack(0, "/tmp");
 	}
 
 	@After
@@ -35,7 +35,7 @@ public class LocalStackTest {
 
 	}
 
-	// Testa inserÃ§ão até o limite de arquivos
+	// Testa insercãão até o limite de arquivos
 	@Test
 	public void testAppend1() throws IOException {
 		byte[] data = "Dado teste padrão".getBytes();
@@ -50,7 +50,7 @@ public class LocalStackTest {
 		assertEquals(stack.getStackFile().length(), stack.getIndex()[Stack.MAX_FILES]);
 	}
 
-	// Testa inserÃ§ão até o limite de tamanho
+	// Testa insercãão até o limite de tamanho
 	@Test
 	public void testAppend2() throws IOException {
 		// Define o dado a ser colocado
@@ -61,8 +61,7 @@ public class LocalStackTest {
 		int max = (Stack.MAX_SIZE - Stack.DATA_OFFSET) / data.length;
 
 		for (int i = 0; i < max; i++) {
-			assertTrue("Erro: " + i + " / Total: " + max, stack.append("file"
-					+ i, data));
+			assertTrue("Erro: " + i + " / Total: " + max, stack.append("file" + i, data));
 		}
 		for (int i = 0; i < 10; i++) {
 			assertFalse("Erro em " + i, stack.append("file" + i, data));
@@ -81,14 +80,13 @@ public class LocalStackTest {
 		stack = generateTestStack(first, docs);
 
 		for (int i = 0; i < stack.getNumFiles(); i++) {
-			byte[] datum = stack.get(i);
+			byte[] actual = stack.get(i);
+			byte[] expected = data[i % data.length];
 			// Checa o tamanho
-			assertEquals("Falhou no doc " + i, data[i % data.length].length,
-					datum.length);
+			assertEquals("Falhou no doc " + i, expected.length, actual.length);
 			// Checa todos os bytes
-			for (int k = 0; k < datum.length; k++) {
-				assertEquals("Falhou no byte " + k, data[i % data.length][k],
-						datum[k]);
+			for (int k = 0; k < actual.length; k++) {
+				assertEquals("Falhou no byte " + k, expected[k], actual[k]);
 			}
 		}
 
@@ -104,15 +102,13 @@ public class LocalStackTest {
 		stack = generateTestStack(first, docs);
 
 		for (int i = 0; i < stack.getNumFiles(); i++) {
-			byte[] datum = stack.get("file" + i);
-
+			byte[] actual = stack.get("file" + i);
+			byte[] expected = data[i % data.length];
 			// Checa o tamanho
-			assertEquals("Falhou no doc " + i, data[i % data.length].length,
-					datum.length);
+			assertEquals("Falhou no doc " + i, expected.length, actual.length);
 			// Checa todos os bytes
-			for (int k = 0; k < datum.length; k++) {
-				assertEquals("Falhou no byte " + k, data[i % data.length][k],
-						datum[k]);
+			for (int k = 0; k < actual.length; k++) {
+				assertEquals("Falhou no byte " + k, expected[k], actual[k]);
 			}
 		}
 
@@ -128,21 +124,21 @@ public class LocalStackTest {
 		int[] offsets1 = stack.getIndex();
 
 		for (int i = 0; i < stack.getNumFiles(); i++) {
-			byte[] datum = stack.get(i);
+			byte[] actual = stack.get(i);
 			// Checa o tamanho
-			assertEquals("Falhou no doc " + i, data[i % data.length].length,
-					datum.length);
+			byte[] expected = data[i % data.length];
+			int exp_size = expected.length;
+			assertEquals("Falhou no doc " + i, exp_size, actual.length);
 			// Checa todos os bytes
-			for (int k = 0; k < datum.length; k++) {
-				assertEquals("Falhou no byte " + k, data[i % data.length][k],
-						datum[k]);
+			for (int k = 0; k < actual.length; k++) {
+				assertEquals("Falhou no byte " + k, expected[k], actual[k]);
 			}
 		}
 
 		assertEquals(stack.getStackFile().length(), offsets1[docs]);
 
 		stack.close();
-		stack = LocalStack.loadStack(stackFile.getAbsolutePath(), false);
+		stack = LocalStack.loadStack(stackFile.getAbsolutePath());
 
 		// Verifica quantidade de arquivos
 		assertEquals(docs, stack.getNumFiles());
@@ -156,26 +152,24 @@ public class LocalStackTest {
 		}
 
 		for (int i = 0; i < stack.getNumFiles(); i++) {
-			byte[] datum = stack.get(i);
+			byte[] actual = stack.get(i);
+			byte[] expected = data[i % data.length];
 			// Checa o tamanho
-			assertEquals("Falhou no doc " + i, data[i % data.length].length,
-					datum.length);
+			assertEquals("Falhou no doc " + i, expected.length, actual.length);
 			// Checa todos os bytes
-			for (int k = 0; k < datum.length; k++) {
-				assertEquals("Falhou no byte " + k, data[i % data.length][k],
-						datum[k]);
+			for (int k = 0; k < actual.length; k++) {
+				assertEquals("Falhou no byte " + k, expected[k], actual[k]);
 			}
 		}
 
 		for (int i = 0; i < stack.getNumFiles(); i++) {
-			byte[] datum = stack.get("file" + i);
+			byte[] actual = stack.get("file" + i);
+			byte[] expected = data[i % data.length];
 			// Checa o tamanho
-			assertEquals("Falhou no doc " + i, data[i % data.length].length,
-					datum.length);
+			assertEquals("Falhou no doc " + i, expected.length, actual.length);
 			// Checa todos os bytes
-			for (int k = 0; k < datum.length; k++) {
-				assertEquals("Falhou no byte " + k, data[i % data.length][k],
-						datum[k]);
+			for (int k = 0; k < actual.length; k++) {
+				assertEquals("Falhou no byte " + k, expected[k], actual[k]);
 			}
 		}
 
@@ -191,9 +185,8 @@ public class LocalStackTest {
 		assertEquals(stack.getStackFile().length(), stack.getIndex()[docs]);
 		assertTrue(stack.close());
 
-		byte[] doc1 = StackUtils.toBytes("Yet another text in stacks\n");
-		byte[] doc2 = StackUtils
-				.toBytes("Yet yet yet another byte[] in the stack\n");
+		byte[] doc1 = TextStacker.toBytes("Yet another text in stacks\n");
+		byte[] doc2 = TextStacker.toBytes("Yet yet yet another byte[] in the stack\n");
 		stack.append("doc1", doc1);
 		stack.append("doc2", doc2);
 		stack.writeStack();
@@ -203,10 +196,10 @@ public class LocalStackTest {
 		byte[] back1 = stack.get(docs);
 		byte[] back2 = stack.get(docs + 1);
 		for (int i = 0; i < doc1.length || i < back1.length; i++) {
-			assertEquals("Erro na posiÃ§ão " + i, doc1[i], back1[i]);
+			assertEquals("Erro na posicãão " + i, doc1[i], back1[i]);
 		}
 		for (int i = 0; i < doc2.length || i < back2.length; i++) {
-			assertEquals("Erro na posiÃ§ão " + i, doc2[i], back2[i]);
+			assertEquals("Erro na posicãão " + i, doc2[i], back2[i]);
 		}
 		stack.close();
 
@@ -222,6 +215,7 @@ public class LocalStackTest {
 		// ### Testar deletados
 		assertEquals(0, stack.getDeleteds().size());
 		assertEquals(ndocs, stack.getNumFiles());
+		
 		// Se o arquivo nao existe na stack... entao não esta deletado! Â¬Â¬
 		for (int i = -2; i < Stack.MAX_FILES + 10; i++) {
 			assertFalse(stack.isDeleted(i));
@@ -235,32 +229,32 @@ public class LocalStackTest {
 		// ### Deletar e checar quantidades de documentos
 		int[] dfiles = { 0, 1, ndocs / 2, ndocs - 2, ndocs - 1 };
 		for (int i = 0; i < dfiles.length; i++) {
-			assertTrue(stack.delete(dfiles[i])); // Deleta
-			assertEquals(i + 1, stack.getDeleteds().size()); // Verifica se
-			// deletou +1
-			// arquivo
-			assertEquals(ndocs - (i + 1), stack.getNumFiles());// Verifica se
-			// tem -1
-			// arquivo
-			assertTrue(stack.isDeleted(dfiles[i])); // Verifica se o arquivo
-			// esta deletado
+			// Deleta
+			assertTrue(stack.delete(dfiles[i])); 
+			
+			// Verifica se deletou +1 arquivo
+			assertEquals(i + 1, stack.getDeleteds().size()); 
+			
+			// Verifica se tem -1 arquivo
+			assertEquals(ndocs - (i + 1), stack.getNumFiles());
+			
+			// Verifica se o arquivo esta deletado
+			assertTrue(stack.isDeleted(dfiles[i])); 
 		}
 
 		// ### Desdeletar e checar quantidades de documentos
 		for (int i = 0; i < dfiles.length; i++) {
-			assertTrue(stack.undelete(dfiles[i])); // Deleta
-			assertEquals(dfiles.length - (i + 1), stack.getDeleteds().size()); // Verifica
-			// se
-			// deletou
-			// -1
-			// arquivo
-			assertEquals(ndocs - dfiles.length + (i + 1), stack.getNumFiles()); // Verifica
-			// se
-			// tem
-			// +1
-			// arquivo
-			assertFalse(stack.isDeleted(dfiles[i])); // Verifica se o arquivo
-			// nao esta deletado
+			// Deleta
+			assertTrue(stack.undelete(dfiles[i])); 
+			
+			// Verifica se deletou -1 arquivo
+			assertEquals(dfiles.length - (i + 1), stack.getDeleteds().size()); 
+			
+			// Verifica se tem +1 arquivo
+			assertEquals(ndocs - dfiles.length + (i + 1), stack.getNumFiles()); 
+			
+			// Verifica se o arquivo nao esta deletado
+			assertFalse(stack.isDeleted(dfiles[i])); 
 		}
 	}
 
@@ -270,7 +264,7 @@ public class LocalStackTest {
 
 	public static LocalStack generateTestStack(int first, int qntd) {
 		try {
-			LocalStack stack = new LocalStack(first, "/tmp", false);
+			LocalStack stack = new LocalStack(first, "/tmp");
 
 			for (int i = 0; i < qntd; i++) {
 				stack.append("file" + i, data[i % data.length]);

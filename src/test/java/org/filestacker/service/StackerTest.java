@@ -10,9 +10,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.BasicConfigurator;
-import org.filestacker.utils.StackUtils;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -204,8 +202,8 @@ public class StackerTest {
 		}
 
 		// Garante que aconteca update+append
-		byte[] bizarra = StackUtils.toBytes(RandomStringUtils
-				.randomAscii(greater_len + 1));
+		String str = RandomStringUtils.randomAscii(greater_len + 1);
+		byte[] bizarra = TextStacker.toBytes(str);
 		int[] dels = { 0, 10, 20, 30, 40 };
 
 		for (int del : dels) {
@@ -267,7 +265,8 @@ public class StackerTest {
 		}
 
 		// Garante que str nova caiba em qualquer posicao para o replace
-		byte[] bizarra = StackUtils.toBytes(RandomStringUtils.randomAscii(lesser_len));
+		String str = RandomStringUtils.randomAscii(lesser_len);
+		byte[] bizarra = TextStacker.toBytes(str);
 
 		// Garante que vai tentar replace em 1 ocorrencia de cada strings e com
 		// um offset:
@@ -287,8 +286,9 @@ public class StackerTest {
 		for (int del : dels) {
 			// é necessario o String.trim() para ficar como esperado... então
 			// byte[] -> String -> byte[]
-			byte[] actual = StackUtils.toBytes(StackUtils.toStr(
-					stacker.searchFile("file" + del)).trim());
+			byte[] extracted = stacker.searchFile("file" + del);
+			String converted = TextStacker.toStr(extracted).trim();
+			byte[] actual = TextStacker.toBytes(converted);
 			assertArrayEquals(bizarra, actual);
 		}
 
@@ -300,8 +300,11 @@ public class StackerTest {
 				if (i == del) {
 					// é necessario o String.trim() para ficar como esperado...
 					// então byte[] -> String -> byte[]
-					byte[] actual = StackUtils.toBytes(StackUtils
-							.toStr(stacker.searchFile(del)).trim());
+					byte[] extracted = stacker.searchFile(del);
+					String converted = TextStacker.toStr(extracted).trim();
+					byte[] actual = TextStacker.toBytes(converted);
+					
+					//byte[] actual = TextStacker.toBytes(TextStacker.toStr(stacker.searchFile(del)).trim());
 					assertArrayEquals("Erro para id " + del, bizarra, actual);
 					continue EXTERNAL;
 				}
