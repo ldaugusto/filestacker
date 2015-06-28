@@ -104,15 +104,19 @@ public class Stacker {
 		return new Stacker(path, stacks, threadSafe, compression);
 	}
 
-	public int addFile(final String filename, final byte[] filedata) {
+	public int addFile(final String filename, byte[] filedata) {
 		/*
 		 * se current é nulo crie nova stack se o nome ja existe, delete o
 		 * arquivo current.append se append retorna false, current = null
 		 * recursivo se foi ok atualiza namespace
 		 */
+		
+		if (useCompression)
+			filedata = StackUtils.compress(filedata);
+		
 		try {
 			int result;
-			if ((result = exists(filename)) != -1) {
+			if ((result = nameToId(filename)) != -1) {
 				deleteFile(result);
 			}
 
@@ -223,26 +227,42 @@ public class Stacker {
 		entries[entries.length - 1] = lastEntry;
 	}
 
-	public int exists(final String filename) {
-		Integer i = namespace.get(StackUtils.strToHexaMD5(filename));
-		if (i == null) { return -1; }
+	public boolean contains(String filename) {
+		return nameToId(filename) > -1;
+	}
+	
+	public int nameToId(final String filename) {
+		String hash = StackUtils.strToHexaMD5(filename);
+		Integer i = namespace.get(hash);
+		if (i == null) { 
+			return -1; 
+		}
 		return i;
 	}
 
 	public byte[] searchFile(final String filename) throws IOException {
-		int stackid = exists(filename);
-		if (stackid == -1) { return new byte[0]; }
+		int stackid = nameToId(filename);
+		if (stackid == -1) { 
+			return new byte[0]; 
+		}
 
 		return searchFile(stackid);
 	}
 
 	public byte[] searchFile(final int stackid) throws IOException {
 		// XXX byte[0], null ou exceptions?
-		if (stackid >= nextStackId) { return new byte[0]; }
+		if (stackid >= nextStackId) { 
+			return new byte[0]; 
+		}
 
 		StackerEntry entry = searchEntry(stackid);
 
-		return entry.get(stackid);
+		byte[] data = entry.get(stackid);
+				
+		if (useCompression)
+			data = StackUtils.uncompress(data);
+
+		return data;
 	}
 
 	public StackerEntry searchEntry(final int stackid) {
