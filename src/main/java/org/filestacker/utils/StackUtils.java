@@ -15,10 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import net.jpountz.lz4.LZ4Factory;
-
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.compress.compressors.snappy.SnappyCompressorInputStream;
 import org.apache.commons.io.DirectoryWalker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -36,7 +33,6 @@ public final class StackUtils {
 	private static final Logger logger = Logger.getLogger(StackUtils.class);
 
 	public static byte[] uncompress(byte[] data) {
-		//return LZ4.safeDecompressor().decompress(data, data.length*3);
 		 try {
 			return Snappy.uncompress(data);
 		} catch (IOException e) {
@@ -46,7 +42,6 @@ public final class StackUtils {
 	}
 	
 	public static byte[] compress(byte[] data) {
-		//return LZ4.fastCompressor().compress(data);
 		try {
 			return Snappy.compress(data);
 		} catch (IOException e) {
@@ -54,9 +49,6 @@ public final class StackUtils {
 			return new byte[0];
 		}
 	}
-
-	public static final LZ4Factory LZ4 = LZ4Factory.safeInstance();
-	
 	
 	/**
 	 * Imprime uma cadeia de bytes como hexadecimal.<br>
