@@ -25,23 +25,23 @@ public class Stacker {
 
 	protected int nextStackId = 0;
 	protected int totalDocs = 0;
-	
+
 	protected final String stacksPath;
 	protected final boolean singleMode;
 	protected final boolean useCompression;
 
 	private static final boolean DEFAULT_SINGLEMODE = true;
 	private static final boolean DEFAULT_COMPRESSION = false;
-	
+
 	public Stacker(final String path) {
 		this(path, DEFAULT_SINGLEMODE, DEFAULT_COMPRESSION);
 	}
-	
+
 	public Stacker(final String path, boolean threadSafe, boolean compression) {
 		stacksPath = path;
 		singleMode = threadSafe;
 		useCompression = compression;
-		
+
 		boolean created = new File(stacksPath).mkdirs();
 		if (!created && logger.isDebugEnabled()) 
 			logger.debug("Não foi possivel criar o diretorio " + path + " para as stacks");
@@ -49,9 +49,9 @@ public class Stacker {
 
 	protected Stacker(final String path, final LocalStack[] stacks, boolean threadSafe, boolean compression) throws IOException {
 		this(path, threadSafe, compression);
-		
+
 		entries = new StackerEntry[stacks.length];
-		
+
 		for (int i = 0; i < stacks.length; i++) {
 			entries[i] = new StackerEntry(stacks[i], singleMode);
 			totalDocs += entries[i].getNumFiles();
@@ -85,7 +85,7 @@ public class Stacker {
 	public static Stacker loadStacker(final String path) throws IOException {
 		return loadStacker(path, DEFAULT_SINGLEMODE, DEFAULT_COMPRESSION);
 	}
-	
+
 	protected static LocalStack[] stacks(String path) throws IOException {
 		String[] extensions = { "stk" };
 		Collection<File> files = FileUtils.listFiles(new File(path), extensions, true);
@@ -96,10 +96,10 @@ public class Stacker {
 		for (File stackFile : files) {
 			stacks[count++] = LocalStack.loadStack(stackFile);
 		}
-		
+
 		return stacks;
 	}
-	
+
 	public static Stacker loadStacker(final String path, boolean threadSafe, boolean compression)  throws IOException {
 		LocalStack[] stacks = stacks(path);
 		return new Stacker(path, stacks, threadSafe, compression);
@@ -111,10 +111,10 @@ public class Stacker {
 		 * arquivo current.append se append retorna false, current = null
 		 * recursivo se foi ok atualiza namespace
 		 */
-		
+
 		if (useCompression)
 			filedata = StackUtils.compress(filedata);
-		
+
 		try {
 			int result;
 			if ((result = nameToId(filename)) != -1) {
@@ -149,7 +149,9 @@ public class Stacker {
 			throws IOException {
 		int datasize = filedata.length;
 
-		if (freeSlots.size() == 0) { return -1; }
+		if (freeSlots.size() == 0) { 
+			return -1; 
+		}
 
 		if (datasize > freeSlots.get(freeSlots.size() - 1).size) {
 			// System.err.println("É, "+datasize+" não cabe em nenhum slot! Maior slot: "+freeSlots.get(freeSlots.size()-1).size);
@@ -175,26 +177,24 @@ public class Stacker {
 
 		StackFreeSlot slot = entry.deleteFile(stackid);
 
-		if (slot == null) {
+		if (slot == null)
 			return false;
-		} else {
-			// totalDocs--;
-			
-			if (!useCompression) {
-				freeSlots.add(slot);
-				Collections.sort(freeSlots);
-			}
-			// printSlotList();
 
-			deleted_stackids.add(stackid);
-			String name_to_remove = namespace.inverse().get(stackid);
-			logger.debug("Adicionando " + name_to_remove + "(" + stackid
-					+ ")	na lista de deletados (before: "
-					+ deleted_stackids.size() + ")");
-			namespace.remove(name_to_remove);
-
-			return true;
+		// totalDocs--;
+		if (!useCompression) {
+			freeSlots.add(slot);
+			Collections.sort(freeSlots);
 		}
+		// printSlotList();
+
+		deleted_stackids.add(stackid);
+		String name_to_remove = namespace.inverse().get(stackid);
+		logger.debug("Adicionando " + name_to_remove + "(" + stackid
+				+ ")	na lista de deletados (before: "
+				+ deleted_stackids.size() + ")");
+		namespace.remove(name_to_remove);
+
+		return true;
 	}
 
 	/**
@@ -234,7 +234,7 @@ public class Stacker {
 	public boolean contains(String filename) {
 		return nameToId(filename) > -1;
 	}
-	
+
 	public int nameToId(final String filename) {
 		String hash = StackUtils.strToHexaMD5(filename);
 		Integer i = namespace.get(hash);
@@ -262,7 +262,7 @@ public class Stacker {
 		StackerEntry entry = searchEntry(stackid);
 
 		byte[] data = entry.get(stackid);
-				
+
 		if (useCompression)
 			data = StackUtils.uncompress(data);
 
@@ -280,7 +280,7 @@ public class Stacker {
 		if (stackid < entries[pivot].firstId) { 
 			return searchEntry(first, pivot, stackid); 
 		}
-		
+
 		if (stackid > entries[pivot].getLastId()) { 
 			return searchEntry(pivot + 1, last, stackid); 
 		}

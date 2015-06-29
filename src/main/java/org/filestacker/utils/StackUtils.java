@@ -45,7 +45,7 @@ public final class StackUtils {
 	private static final Logger logger = Logger.getLogger(StackUtils.class);
 
 	public static byte[] uncompress(byte[] data) {
-		return LZ4.safeDecompressor().decompress(data, data.length*2);
+		return LZ4.safeDecompressor().decompress(data, 0, data.length, data.length*3);
 	}
 	
 	public static byte[] compress(byte[] data) {
