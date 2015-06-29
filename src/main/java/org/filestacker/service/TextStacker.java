@@ -198,8 +198,8 @@ public class TextStacker extends Stacker {
 						"3 byte-char: malformed input: partial character at end"); }
 				char2 = bytearr[count - 2];
 				char3 = bytearr[count - 1];
-				if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) { throw new UTFDataFormatException(
-						"3 byte-char: malformed input around byte "
+				if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) { 
+					throw new UTFDataFormatException("3 byte-char: malformed input around byte "
 								+ (count - 2) + "(value " + char2 + ") or "
 								+ (count - 1) + "(value " + char3 + ")"); }
 				chararr[chararr_count++] = (char) (((c & 0x0F) << 12)

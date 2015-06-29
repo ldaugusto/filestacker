@@ -1,7 +1,6 @@
 package org.filestacker.utils;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -9,9 +8,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UTFDataFormatException;
 import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -21,20 +18,14 @@ import java.util.List;
 import net.jpountz.lz4.LZ4Factory;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.compress.compressors.CompressorException;
-import org.apache.commons.compress.compressors.CompressorOutputStream;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.compressors.snappy.FramedSnappyCompressorInputStream;
+import org.apache.commons.compress.compressors.snappy.SnappyCompressorInputStream;
 import org.apache.commons.io.DirectoryWalker;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
+import org.xerial.snappy.Snappy;
 
 /** Diversos métodos utilitários de I/O comuns a outras classes das Stacks. */
 
@@ -45,11 +36,23 @@ public final class StackUtils {
 	private static final Logger logger = Logger.getLogger(StackUtils.class);
 
 	public static byte[] uncompress(byte[] data) {
-		return LZ4.safeDecompressor().decompress(data, 0, data.length, data.length*3);
+		//return LZ4.safeDecompressor().decompress(data, data.length*3);
+		 try {
+			return Snappy.uncompress(data);
+		} catch (IOException e) {
+			logger.error("Error uncompressing", e);
+			return new byte[0];
+		}
 	}
 	
 	public static byte[] compress(byte[] data) {
-		return LZ4.fastCompressor().compress(data);
+		//return LZ4.fastCompressor().compress(data);
+		try {
+			return Snappy.compress(data);
+		} catch (IOException e) {
+			logger.error("Error uncompressing", e);
+			return new byte[0];
+		}
 	}
 
 	public static final LZ4Factory LZ4 = LZ4Factory.safeInstance();
