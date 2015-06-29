@@ -171,6 +171,14 @@ public class Stacker {
 		}
 	}
 
+	public boolean deleteFile(String stackFile) throws IOException {
+		int stackid = nameToId(stackFile);
+		if (stackid >= 0)
+			return deleteFile(stackid);
+		else
+			return false;
+	}
+	
 	public boolean deleteFile(int stackid) throws IOException {
 		logger.debug("Vou tentar deletar " + stackid);
 		StackerEntry entry = searchEntry(stackid);

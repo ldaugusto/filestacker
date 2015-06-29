@@ -89,10 +89,10 @@ public class LocalStack implements Stack {
 			logger.debug("new(): " + file.getName());
 		} else if (file.canWrite() && file.canRead()) {
 			boolean deleted = file.delete();
-			logger.debug("new(): arquivo " + file.getAbsolutePath() + " j� existia. "
-					+ (deleted ? "Vai ser sobreescrito." : "E n�o foi poss�vel delet�-lo"));
+			logger.debug("new(): file " + file.getAbsolutePath() + " already exists. "
+					+ (deleted ? "Lets overwrite." : "And could no be overwrited."));
 		} else {
-			logger.error("new(): n�o pode ler ou escrever o arquivo.");
+			logger.error("new(): could not read or write file");
 		}
 	}
 
