@@ -69,7 +69,8 @@ public class Stacker {
 				}
 			}
 
-			freeSlots.addAll(entries[i].getDeleteds());
+			if (!useCompression)
+				freeSlots.addAll(entries[i].getDeleteds());
 		}
 
 		if (entries.length > 0) {
@@ -178,8 +179,11 @@ public class Stacker {
 			return false;
 		} else {
 			// totalDocs--;
-			freeSlots.add(slot);
-			Collections.sort(freeSlots);
+			
+			if (!useCompression) {
+				freeSlots.add(slot);
+				Collections.sort(freeSlots);
+			}
 			// printSlotList();
 
 			deleted_stackids.add(stackid);

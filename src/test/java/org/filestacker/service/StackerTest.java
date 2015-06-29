@@ -105,7 +105,7 @@ public class StackerTest {
 		assertEquals(ndocs, stacker.totalDocs);
 		assertEquals(ndocs, stacker.nextStackId);
 	}
-
+	
 	@Test
 	public void testNamespace() throws IOException {
 		stacker = new Stacker("/tmp/stacker/");

@@ -4,7 +4,7 @@
   <groupId>org.filestacker</groupId>
   <artifactId>filestacker</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0-rc1</version>
   <name>filestacker</name>
   <url>http://maven.apache.org</url>
 

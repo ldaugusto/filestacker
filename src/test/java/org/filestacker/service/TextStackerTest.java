@@ -1,5 +1,6 @@
 package org.filestacker.service;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -99,6 +100,108 @@ public class TextStackerTest {
 		
 		assertEquals(ndocs, stacker.totalDocs);
 		assertEquals(ndocs, stacker.nextStackId);
+	}
+	
+	final static String[] data = {
+		"abcde fgh ij klmnop qrst uvwxyz \n",
+		"são paulo corinthians atlético-mg américa-rj \t\n",
+		"pé pá lá já má mé mó ão ãe \n",
+		"I can has cheezburger !? omgwtfbbq! \n",
+		"As árveres... somos nozes... \n",
+		"Dolly, Dolly Guaraná Dolly... Dolly Guaraná, sabor diferente \n",
+		"!@#$%*() -={}[]^~; :.,<> | \n"};
+	
+	@Test
+	public void testNamespace() throws IOException {
+		stacker = new TextStacker(STACK_PATH);
+		int ndocs = 50;
+
+		// ##############################
+		// ### Criacao e testes basicos de seguranca
+		for (int i = 0; i < ndocs; i++) {
+			String text = data[i % data.length];
+			stacker.addText("file" + i, text);
+		}
+		stacker.optimize();
+		for (int i = 0; i < ndocs; i++) {
+			String text = data[i % data.length];
+			assertEquals(text, stacker.searchText("file" + i));
+		}
+		assertEquals(ndocs, stacker.totalDocs);
+		assertEquals(ndocs, stacker.nextStackId);
+		// ##############################
+
+		for (int i = ndocs; i < ndocs * 2; i++) {
+			String text = data[i % data.length];
+			stacker.addText("file" + i, text);
+		}
+		stacker.optimize();
+		for (int i = 0; i < ndocs * 2; i++) {
+			String text = data[i % data.length];
+			assertEquals(text, stacker.searchText("file" + i));
+		}
+		assertEquals(ndocs * 2, stacker.totalDocs);
+		assertEquals(ndocs * 2, stacker.nextStackId);
+	}
+	
+	// ESSE TESTE SO é VALIDO ENQUANTO NAO TIVER GC
+	@Test
+	public void testUpdates() throws IOException {
+		stacker = new TextStacker(STACK_PATH);
+		int ndocs = 50;
+
+		// ##############################
+		// ### Criacao e testes basicos de seguranca
+		for (int i = 0; i < ndocs; i++) {
+			String text = data[i % data.length];
+			stacker.addText("file" + i, text);
+		}
+
+		stacker.optimize();
+
+		for (int i = 0; i < ndocs; i++) {
+			String text = data[i % data.length];
+			assertEquals(text, stacker.searchText("file" + i));
+		}
+
+		assertEquals(ndocs, stacker.totalDocs);
+		assertEquals(ndocs, stacker.nextStackId);
+		// ##############################
+
+		// Define o maior e o menor tamanho dos dados de teste
+		// Maior+1: Util para garantir que haja apenas um update, sem replace
+		// Menor : Util para garantir que haja um replace em qualquer posicao
+		int greater_len = 0;
+		for (String s : data) {
+			if (s.length() > greater_len) {
+				greater_len = s.length();
+			}
+		}
+
+		// Garante que aconteca update+append
+		String bizarra = RandomStringUtils.randomAscii(greater_len + 1);
+		int[] dels = { 0, 10, 20, 30, 40 };
+
+		for (int del : dels) {
+			stacker.addText("file" + del, bizarra);
+		}
+		stacker.optimize();
+
+		// A cadeia deve ser encontrada corretamente tanto pelo nome...
+		for (int del : dels) {
+			assertEquals(bizarra, stacker.searchText("file" + del));
+		}
+
+		// ...mas a busca por IDs deve continuar igual a como era antes...
+		for (int i = 0; i < ndocs; i++) {
+			String text = data[i % data.length];
+			assertEquals(text, stacker.searchText(i));
+		}
+
+		// ...e com as posicoes novas sendo os adicionados...
+		for (int i = ndocs; i < ndocs + dels.length; i++) {
+			assertEquals(bizarra, stacker.searchText(i));
+		}
 	}
 	
 	/**
