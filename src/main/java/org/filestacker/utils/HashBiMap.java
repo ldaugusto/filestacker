@@ -1,7 +1,7 @@
 package org.filestacker.utils;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -12,13 +12,14 @@ public class HashBiMap<T1, T2> {
 	private static final Logger logger = Logger.getLogger(HashBiMap.class);
 
 	public HashBiMap() {
-		hash = new HashMap<T1, T2>();
-		cohash = new HashMap<T2, T1>();
+		hash = new ConcurrentHashMap<T1, T2>();
+		cohash = new ConcurrentHashMap<T2, T1>();
 	}
 
 	public void put(T1 key, T2 value) {
 		T2 previous = hash.put(key, value);
-		cohash.remove(previous);
+		if (previous != null)
+			cohash.remove(previous);
 		if (cohash.containsKey(value)) {
 			logger.warn("HashBiMap supposed to satisfy k1 -> v1 & v1 -> k1, but '"+value+"' was already there. It may hurt you.");
 		}

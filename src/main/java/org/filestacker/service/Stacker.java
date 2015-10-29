@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -32,6 +34,8 @@ public class Stacker {
 
 	private static final boolean DEFAULT_SINGLEMODE = true;
 	private static final boolean DEFAULT_COMPRESSION = false;
+
+	private Lock lock = new ReentrantLock();
 
 	public Stacker(final String path) {
 		this(path, DEFAULT_SINGLEMODE, DEFAULT_COMPRESSION);
@@ -106,16 +110,17 @@ public class Stacker {
 	}
 
 	public int addFile(final String filename, byte[] filedata) {
-		/*
-		 * se current é nulo crie nova stack se o nome ja existe, delete o
-		 * arquivo current.append se append retorna false, current = null
-		 * recursivo se foi ok atualiza namespace
-		 */
-
-		if (useCompression)
-			filedata = StackUtils.compress(filedata);
-
 		try {
+			lock.lock();
+			/*
+			 * se current é nulo crie nova stack se o nome ja existe, delete o
+			 * arquivo current.append se append retorna false, current = null
+			 * recursivo se foi ok atualiza namespace
+			 */
+			if (useCompression)
+				filedata = StackUtils.compress(filedata);
+
+
 			int result;
 			if ((result = nameToId(filename)) != -1) {
 				deleteFile(result);
@@ -142,32 +147,40 @@ public class Stacker {
 		} catch (IOException ioe) {
 			logger.warn("Não foi possível adicionar o doc " + filename + " na stack", ioe);
 			return -1;
+		} finally {
+			lock.unlock();
 		}
 	}
 
 	private int tryToReplace(final String filename, final byte[] filedata)
 			throws IOException {
-		int datasize = filedata.length;
+		try {
+			lock.lock();
+			int datasize = filedata.length;
 
-		if (freeSlots.size() == 0) { 
-			return -1; 
-		}
+			if (freeSlots.size() == 0) { 
+				return -1; 
+			}
 
-		if (datasize > freeSlots.get(freeSlots.size() - 1).size) {
-			// System.err.println("É, "+datasize+" não cabe em nenhum slot! Maior slot: "+freeSlots.get(freeSlots.size()-1).size);
-			return -2;
-		}
+			if (datasize > freeSlots.get(freeSlots.size() - 1).size) {
+				// System.err.println("É, "+datasize+" não cabe em nenhum slot! Maior slot: "+freeSlots.get(freeSlots.size()-1).size);
+				return -2;
+			}
 
-		StackFreeSlot slot = searchSlot(0, freeSlots.size() - 1, datasize);
+			StackFreeSlot slot = searchSlot(0, freeSlots.size() - 1, datasize);
 
-		if (slot.stack.replace(slot.position, filename, filedata)) {
-			logger.debug("Utilizando slot vago " + slot + " para " + filename);
-			namespace.put(StackUtils.strToHexaMD5(filename), (slot.stack.firstId + slot.position));
-			freeSlots.remove(slot);
-			// Collections.sort(freeSlots);
-			return (slot.stack.firstId + slot.position);
-		} else {
-			return -3;
+			if (slot.stack.replace(slot.position, filename, filedata)) {
+				logger.debug("Utilizando slot vago " + slot + " para " + filename);
+				namespace.put(StackUtils.strToHexaMD5(filename), (slot.stack.firstId + slot.position));
+				freeSlots.remove(slot);
+				// Collections.sort(freeSlots);
+				return (slot.stack.firstId + slot.position);
+			} else {
+				return -3;
+			}
+
+		} finally {
+			lock.unlock();
 		}
 	}
 
@@ -178,31 +191,37 @@ public class Stacker {
 		else
 			return false;
 	}
-	
+
 	public boolean deleteFile(int stackid) throws IOException {
-		logger.debug("Vou tentar deletar " + stackid);
-		StackerEntry entry = searchEntry(stackid);
+		try {
 
-		StackFreeSlot slot = entry.deleteFile(stackid);
+			lock.lock();
+			logger.debug("Vou tentar deletar " + stackid);
+			StackerEntry entry = searchEntry(stackid);
 
-		if (slot == null)
-			return false;
+			StackFreeSlot slot = entry.deleteFile(stackid);
 
-		// totalDocs--;
-		if (!useCompression) {
-			freeSlots.add(slot);
-			Collections.sort(freeSlots);
+			if (slot == null)
+				return false;
+
+			// totalDocs--;
+			if (!useCompression) {
+				freeSlots.add(slot);
+				Collections.sort(freeSlots);
+			}
+			// printSlotList();
+
+			deleted_stackids.add(stackid);
+			String name_to_remove = namespace.inverse().get(stackid);
+			logger.debug("Adicionando " + name_to_remove + "(" + stackid
+					+ ")	na lista de deletados (before: "
+					+ deleted_stackids.size() + ")");
+			namespace.remove(name_to_remove);
+
+			return true;
+		} finally {
+			lock.unlock();
 		}
-		// printSlotList();
-
-		deleted_stackids.add(stackid);
-		String name_to_remove = namespace.inverse().get(stackid);
-		logger.debug("Adicionando " + name_to_remove + "(" + stackid
-				+ ")	na lista de deletados (before: "
-				+ deleted_stackids.size() + ")");
-		namespace.remove(name_to_remove);
-
-		return true;
 	}
 
 	/**
@@ -217,7 +236,9 @@ public class Stacker {
 			final int data_size) {
 		int pivot = (first + last) / 2;
 
-		if (first == last) { return freeSlots.get(first); }
+		if (first == last) { 
+			return freeSlots.get(first);
+		}
 
 		if (freeSlots.get(pivot).size >= data_size) {
 			return searchSlot(first, pivot, data_size);
@@ -232,7 +253,6 @@ public class Stacker {
 	 */
 	private final void createNewStack() {
 		lastEntry = new StackerEntry(new LocalStack(nextStackId, stacksPath), singleMode);
-
 		StackerEntry[] backup = entries;
 		entries = new StackerEntry[backup.length + 1];
 		System.arraycopy(backup, 0, entries, 0, backup.length);
@@ -244,12 +264,17 @@ public class Stacker {
 	}
 
 	public int nameToId(final String filename) {
-		String hash = StackUtils.strToHexaMD5(filename);
-		Integer i = namespace.get(hash);
-		if (i == null) { 
-			return -1; 
+		try {
+			lock.lock();
+			String hash = StackUtils.strToHexaMD5(filename);
+			Integer i = namespace.get(hash);
+			if (i == null) { 
+				return -1; 
+			}
+			return i;
+		} finally {
+			lock.unlock();
 		}
-		return i;
 	}
 
 	public byte[] searchFile(final String filename) throws IOException {
@@ -267,12 +292,18 @@ public class Stacker {
 			return new byte[0]; 
 		}
 
-		StackerEntry entry = searchEntry(stackid);
+		byte[] data;
+		try {
+			lock.lock();
+			StackerEntry entry = searchEntry(stackid);
+			data = entry.get(stackid);
 
-		byte[] data = entry.get(stackid);
+			if (useCompression)
+				data = StackUtils.uncompress(data);
 
-		if (useCompression)
-			data = StackUtils.uncompress(data);
+		} finally {
+			lock.unlock();
+		}
 
 		return data;
 	}

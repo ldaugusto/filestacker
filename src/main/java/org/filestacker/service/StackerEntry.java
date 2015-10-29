@@ -10,9 +10,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Encapsulamento para uma Stack, de forma que funcione da forma com que o
- * Stacker precisa: - thread-safe : StackerEntry possui um lock para
- * restringir acesso - tabis : converter os stackids para 'positions' internas da
- * stack. - outras necessidades
+ * Stacker precisa: 
+ * - thread-safe : StackerEntry possui um lock para restringir acesso 
+ * - tabis : converter os stackids para 'positions' internas da stack. 
+ * - outras necessidades
  * 
  * @author daniel
  */
