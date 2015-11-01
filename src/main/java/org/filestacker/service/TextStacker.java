@@ -41,15 +41,15 @@ public class TextStacker extends Stacker {
 	}
 	
 	public String searchText(int stackid) throws IOException {
-		return toStr(searchFile(stackid));
+		return new String(searchFile(stackid));
 	}
 	
 	public String searchText(String name) throws IOException {
-		return toStr(searchFile(name));
+		return new String(searchFile(name));
 	}
 
 	public int addText(String name, String text) {
-		return addFile(name, toBytes(text));
+		return addFile(name, text.getBytes());
 	}
 	
 	/**
